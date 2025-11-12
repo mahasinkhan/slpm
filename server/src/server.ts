@@ -16,7 +16,7 @@ const corsOptions = {
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://client-xi-tawny.vercel.app'  
+    'https://slbnm-8u0982t43-mahasin-khans-projects.vercel.app/login'  
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -28,13 +28,23 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
 
-// API Routes - Mount all routes under /api
-app.use('/api', routes);
+// Health check endpoints (BEFORE other routes)
+// Railway default health check
+app.get('/health', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    status: 'healthy',
+    message: 'SL Brothers Ltd API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 
-// Health check
+// API health check
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({
     success: true,
+    status: 'healthy',
     message: 'SL Brothers Ltd API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
@@ -60,6 +70,9 @@ app.get('/', (req: Request, res: Response) => {
   });
 });
 
+// API Routes - Mount all routes under /api
+app.use('/api', routes);
+
 // 404 handler
 app.use('*', (req: Request, res: Response) => {
   res.status(404).json({
@@ -76,10 +89,13 @@ app.listen(PORT, () => {
   console.log('='.repeat(50));
   console.log(`🚀 SL Brothers Backend running on port ${PORT}`);
   console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔗 API Health check: http://localhost:${PORT}/api/health`);
   console.log(`📚 API Base URL: http://localhost:${PORT}/api`);
   console.log('='.repeat(50));
   console.log('\n📝 Available Routes:');
+  console.log('  - GET    /health (Railway health check)');
+  console.log('  - GET    /api/health');
   console.log('  - POST   /api/auth/register');
   console.log('  - POST   /api/auth/login');
   console.log('  - GET    /api/auth/profile');
