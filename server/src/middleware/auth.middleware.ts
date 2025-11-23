@@ -1,9 +1,15 @@
+// server/src/middleware/auth.middleware.ts
+
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
 import { verifyToken } from '../utils/jwt.util';
 import { Role } from '@prisma/client';
 
-export const authenticate = async (
+/**
+ * Authenticate user with JWT token
+ * Usage: router.get('/protected', authenticateToken, handler)
+ */
+export const authenticateToken = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -40,6 +46,38 @@ export const authenticate = async (
   }
 };
 
+/**
+ * Verify user has SuperAdmin role
+ * Usage: router.get('/admin', authenticateToken, verifySuperAdmin, handler)
+ */
+export const verifySuperAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+    return;
+  }
+
+  if (req.user.role !== Role.SUPERADMIN) {
+    res.status(403).json({
+      success: false,
+      message: 'Access denied. SuperAdmin privileges required'
+    });
+    return;
+  }
+
+  next();
+};
+
+/**
+ * Authorize specific roles
+ * Usage: router.get('/resource', authenticateToken, authorize([Role.ADMIN, Role.SUPERADMIN]), handler)
+ */
 export const authorize = (allowedRoles: Role[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
@@ -61,3 +99,5 @@ export const authorize = (allowedRoles: Role[]) => {
     next();
   };
 };
+
+export default { authenticateToken, verifySuperAdmin, authorize };

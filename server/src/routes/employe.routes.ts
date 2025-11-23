@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import employeeController from '../controllers/employee.controller';
-import { authenticate, authorize } from '../middleware/auth.middleware';
+import { authenticateToken, authorize } from '../middleware/auth.middleware';
 import { Role } from '@prisma/client';
 
 const router = Router();
 
 // All routes require authentication
-router.use(authenticate);
+router.use(authenticateToken);
 
 // Get employee statistics (Admin and SuperAdmin)
 router.get(

@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.tsx
-import { createContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useState, useEffect, ReactNode, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -22,6 +22,15 @@ interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
+
+// Add this custom hook
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
 
 interface AuthProviderProps {
   children: ReactNode

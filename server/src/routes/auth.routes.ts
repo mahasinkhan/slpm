@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
-import { authenticate } from '../middleware/auth.middleware';
+import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
 const authController = new AuthController();
@@ -10,6 +10,6 @@ router.post('/register', (req, res) => authController.register(req, res));
 router.post('/login', (req, res) => authController.login(req, res));
 
 // Protected routes
-router.get('/profile', authenticate, (req, res) => authController.getProfile(req, res));
+router.get('/profile', authenticateToken, (req, res) => authController.getProfile(req, res));
 
 export default router;

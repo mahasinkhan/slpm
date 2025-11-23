@@ -45,6 +45,13 @@ import SystemHealth from './pages/superadmin/System/SystemHealth'
 import DatabaseManagement from './pages/superadmin/System/DatabaseManagement'
 import APIMonitor from './pages/superadmin/System/APIMonitor'
 
+// Super Admin Pages - Media & Content Management
+import CMSManagement from './pages/superadmin/Media/CMSManagement'
+import MediaLibrary from './pages/superadmin/Media/MediaLibrary'
+import NewsManagement from './pages/superadmin/Media/NewsManagement'
+import BlogPostsList from './pages/superadmin/Media/BlogPostsList'
+import BlogPosts from './pages/superadmin/Media/BlogPosts'
+
 // Super Admin Pages - Approvals
 import PendingApprovals from './pages/superadmin/Approvals/PendingApprovals'
 import ApprovalHistory from './pages/superadmin/Approvals/ApprovalHistory'
@@ -205,6 +212,58 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['SUPERADMIN']}>
                 <APIMonitor />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Super Admin Routes - Media & Content Management */}
+          <Route
+            path="/superadmin/cms"
+            element={
+              <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+                <CMSManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/superadmin/media-library"
+            element={
+              <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+                <MediaLibrary />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/superadmin/news-management"
+            element={
+              <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+                <NewsManagement />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Blog Posts Routes */}
+          <Route
+            path="/superadmin/blog-posts"
+            element={
+              <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+                <BlogPostsList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/superadmin/blog-posts/new"
+            element={
+              <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+                <BlogPosts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/superadmin/blog-posts/edit/:id"
+            element={
+              <ProtectedRoute allowedRoles={['SUPERADMIN']}>
+                <BlogPosts />
               </ProtectedRoute>
             }
           />
