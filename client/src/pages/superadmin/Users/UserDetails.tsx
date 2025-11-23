@@ -4,13 +4,8 @@ import {
   Clock,
   LogIn,
   LogOut,
-  User,
-  Calendar,
-  BarChart3,
   Briefcase,
   AlertCircle,
-  CheckCircle,
-  XCircle,
   Eye,
   EyeOff,
   Loader
@@ -19,13 +14,43 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 const API_BASE_URL = 'http://localhost:5000/api/tracking'
 
+// Type Definitions
+interface User {
+  firstName?: string;
+  lastName?: string;
+}
+
+interface Employee {
+  id: number;
+  employeeId?: string;
+  email: string;
+  department: string;
+  position?: string;
+  location?: string;
+  status: 'ONLINE' | 'OFFLINE';
+  loginTime?: string;
+  logoutTime?: string;
+  workDurationHours?: number;
+  user?: User;
+}
+
+interface DailyStats {
+  name: string;
+  hoursWorked: number;
+}
+
+interface WeeklyStats {
+  name: string;
+  hours: number;
+}
+
 const EmployeeTracker = () => {
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [employees, setEmployees] = useState([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [selectedEmployee, setSelectedEmployee] = useState(null)
-  const [activeView, setActiveView] = useState('all')
+  const [error, setError] = useState<string | null>(null)
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
+  const [activeView, setActiveView] = useState<'all' | 'online' | 'stats'>('all')
 
   // Update clock
   useEffect(() => {
@@ -62,7 +87,7 @@ const EmployeeTracker = () => {
   }, [])
 
   // Login employee
-  const handleLogin = async (employee) => {
+  const handleLogin = async (employee: Employee) => {
     try {
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
@@ -90,7 +115,7 @@ const EmployeeTracker = () => {
   }
 
   // Logout employee
-  const handleLogout = async (employee) => {
+  const handleLogout = async (employee: Employee) => {
     try {
       const response = await fetch(`${API_BASE_URL}/logout`, {
         method: 'POST',
@@ -114,16 +139,16 @@ const EmployeeTracker = () => {
     }
   }
 
-  // Get work duration
-  const getWorkDuration = (employee) => {
+  // Get work duration - FIXED: Added .getTime()
+  const getWorkDuration = (employee: Employee): string => {
     if (!employee.loginTime) return '0h'
     const loginTime = new Date(employee.loginTime)
-    const hours = (new Date() - loginTime) / 3600000
+    const hours = (new Date().getTime() - loginTime.getTime()) / 3600000
     return `${Math.floor(hours)}h ${Math.round((hours % 1) * 60)}m`
   }
 
   // Get daily stats
-  const getDailyStats = () => {
+  const getDailyStats = (): DailyStats[] => {
     return employees.map(emp => ({
       name: emp.user?.firstName || emp.email.split('@')[0],
       hoursWorked: emp.workDurationHours || 0
@@ -131,7 +156,7 @@ const EmployeeTracker = () => {
   }
 
   // Get weekly stats
-  const getWeeklyStats = () => {
+  const getWeeklyStats = (): WeeklyStats[] => {
     return employees.map(emp => ({
       name: emp.user?.firstName || emp.email.split('@')[0],
       hours: emp.workDurationHours || 0
@@ -237,7 +262,7 @@ const EmployeeTracker = () => {
 
       {/* View Tabs */}
       <div className="flex gap-2 mb-6">
-        {['all', 'online', 'stats'].map(view => (
+        {(['all', 'online', 'stats'] as const).map(view => (
           <button
             key={view}
             onClick={() => setActiveView(view)}
@@ -420,7 +445,7 @@ const EmployeeTracker = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-gray-600 text-sm">Since</p>
-                    <p className="text-green-700 font-bold">{new Date(emp.loginTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p className="text-green-700 font-bold">{emp.loginTime ? new Date(emp.loginTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</p>
                   </div>
                 </div>
               </motion.div>

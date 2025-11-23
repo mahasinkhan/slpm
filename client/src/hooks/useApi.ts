@@ -92,7 +92,7 @@ export function useUsers() {
   };
 
   const updateUserRole = async (id: string, role: User['role']) => {
-    const response = await api.updateUser(id, role);
+    const response = await api.updateUser(id, { role: role });
     if (response.success) {
       await fetchUsers();
       return { success: true };

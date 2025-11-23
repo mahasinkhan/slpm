@@ -1,20 +1,54 @@
-// mediaApi.js - API Helper for Media Library
+// mediaApi.ts - API Helper for Media Library
 // Place this file in: src/services/mediaApi.ts
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// Type Definitions
+interface MediaQueryParams {
+  page?: number;
+  limit?: number;
+  type?: string;
+  folder?: string;
+  uploadedBy?: string;
+  offset?: number;
+}
+
+interface MediaMetadata {
+  title?: string;
+  description?: string;
+  folder?: string;
+  public?: boolean;
+  tags?: string | string[];
+}
+
+interface ValidationOptions {
+  maxSize?: number;
+  allowedTypes?: string[];
+}
+
+interface ValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
 /**
  * Get authentication token from storage
  */
-const getAuthToken = () => {
+const getAuthToken = (): string | null => {
   return localStorage.getItem('token') || sessionStorage.getItem('token');
 };
 
 /**
  * Common headers for API requests
  */
-const getHeaders = (includeContentType = true) => {
-  const headers = {
+const getHeaders = (includeContentType = true): HeadersInit => {
+  const headers: Record<string, string> = {
     'Authorization': `Bearer ${getAuthToken()}`
   };
   
@@ -28,7 +62,7 @@ const getHeaders = (includeContentType = true) => {
 /**
  * Handle API response
  */
-const handleResponse = async (response) => {
+const handleResponse = async <T = any>(response: Response): Promise<T> => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Request failed' }));
     throw new Error(error.message || `HTTP ${response.status}: ${response.statusText}`);
@@ -43,11 +77,11 @@ export const mediaApi = {
   /**
    * Fetch all media with filters and pagination
    */
-  async getAll(params = {}) {
+  async getAll(params: MediaQueryParams = {}): Promise<any> {
     const queryParams = new URLSearchParams();
     
-    if (params.page) queryParams.append('page', params.page);
-    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.page) queryParams.append('page', String(params.page));
+    if (params.limit) queryParams.append('limit', String(params.limit));
     if (params.type) queryParams.append('type', params.type);
     if (params.folder) queryParams.append('folder', params.folder);
     if (params.uploadedBy) queryParams.append('uploadedBy', params.uploadedBy);
@@ -65,7 +99,7 @@ export const mediaApi = {
   /**
    * Get single media by ID
    */
-  async getById(id) {
+  async getById(id: string): Promise<any> {
     const response = await fetch(
       `${API_BASE_URL}/media/${id}`,
       {
@@ -79,7 +113,7 @@ export const mediaApi = {
   /**
    * Upload media files
    */
-  async upload(files, metadata = {}) {
+  async upload(files: File[], metadata: MediaMetadata = {}): Promise<any> {
     const formData = new FormData();
     
     // Append files
@@ -91,7 +125,7 @@ export const mediaApi = {
     if (metadata.title) formData.append('title', metadata.title);
     if (metadata.description) formData.append('description', metadata.description);
     if (metadata.folder) formData.append('folder', metadata.folder);
-    if (metadata.public !== undefined) formData.append('public', metadata.public);
+    if (metadata.public !== undefined) formData.append('public', String(metadata.public));
     if (metadata.tags) {
       if (Array.isArray(metadata.tags)) {
         metadata.tags.forEach(tag => formData.append('tags', tag));
@@ -117,7 +151,11 @@ export const mediaApi = {
   /**
    * Upload single file with progress tracking
    */
-  async uploadWithProgress(file, metadata = {}, onProgress) {
+  async uploadWithProgress(
+    file: File, 
+    metadata: MediaMetadata = {}, 
+    onProgress?: (progress: number) => void
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       const formData = new FormData();
       formData.append('files', file);
@@ -126,8 +164,11 @@ export const mediaApi = {
       if (metadata.title) formData.append('title', metadata.title);
       if (metadata.description) formData.append('description', metadata.description);
       if (metadata.folder) formData.append('folder', metadata.folder);
-      if (metadata.public !== undefined) formData.append('public', metadata.public);
-      if (metadata.tags) formData.append('tags', metadata.tags);
+      if (metadata.public !== undefined) formData.append('public', String(metadata.public));
+      if (metadata.tags) {
+        const tagsValue = Array.isArray(metadata.tags) ? metadata.tags.join(',') : metadata.tags;
+        formData.append('tags', tagsValue);
+      }
       
       const xhr = new XMLHttpRequest();
       
@@ -176,7 +217,7 @@ export const mediaApi = {
   /**
    * Update media metadata
    */
-  async update(id, data) {
+  async update(id: string, data: Partial<MediaMetadata>): Promise<any> {
     const response = await fetch(
       `${API_BASE_URL}/media/${id}`,
       {
@@ -192,7 +233,7 @@ export const mediaApi = {
   /**
    * Delete media
    */
-  async delete(id) {
+  async delete(id: string): Promise<any> {
     const response = await fetch(
       `${API_BASE_URL}/media/${id}`,
       {
@@ -207,7 +248,7 @@ export const mediaApi = {
   /**
    * Track media view
    */
-  async trackView(id) {
+  async trackView(id: string): Promise<any> {
     try {
       const response = await fetch(
         `${API_BASE_URL}/media/${id}/view`,
@@ -227,7 +268,7 @@ export const mediaApi = {
   /**
    * Track media download
    */
-  async trackDownload(id) {
+  async trackDownload(id: string): Promise<any> {
     try {
       const response = await fetch(
         `${API_BASE_URL}/media/${id}/download`,
@@ -247,12 +288,12 @@ export const mediaApi = {
   /**
    * Get public media (no auth required)
    */
-  async getPublic(params = {}) {
+  async getPublic(params: MediaQueryParams = {}): Promise<any> {
     const queryParams = new URLSearchParams();
     
     if (params.type) queryParams.append('type', params.type);
-    if (params.limit) queryParams.append('limit', params.limit);
-    if (params.offset) queryParams.append('offset', params.offset);
+    if (params.limit) queryParams.append('limit', String(params.limit));
+    if (params.offset) queryParams.append('offset', String(params.offset));
     
     const response = await fetch(
       `${API_BASE_URL}/media/public?${queryParams}`
@@ -269,7 +310,7 @@ export const folderApi = {
   /**
    * Create a new folder
    */
-  async create(name, parentFolder = 'root') {
+  async create(name: string, parentFolder = 'root'): Promise<any> {
     const response = await fetch(
       `${API_BASE_URL}/folders`,
       {
@@ -285,7 +326,7 @@ export const folderApi = {
   /**
    * Get all folders
    */
-  async getAll() {
+  async getAll(): Promise<any> {
     const response = await fetch(
       `${API_BASE_URL}/folders`,
       {
@@ -299,7 +340,7 @@ export const folderApi = {
   /**
    * Delete folder
    */
-  async delete(id) {
+  async delete(id: string): Promise<any> {
     const response = await fetch(
       `${API_BASE_URL}/folders/${id}`,
       {
@@ -319,7 +360,7 @@ export const mediaUtils = {
   /**
    * Format file size
    */
-  formatFileSize(bytes) {
+  formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -330,8 +371,8 @@ export const mediaUtils = {
   /**
    * Detect file type from filename
    */
-  detectFileType(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
+  detectFileType(filename: string): string {
+    const ext = filename.split('.').pop()?.toLowerCase() || '';
     
     const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'];
     const videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv'];
@@ -349,7 +390,7 @@ export const mediaUtils = {
   /**
    * Validate file
    */
-  validateFile(file, options = {}) {
+  validateFile(file: File, options: ValidationOptions = {}): ValidationResult {
     const {
       maxSize = 50 * 1024 * 1024, // 50MB default
       allowedTypes = ['image', 'video', 'audio', 'document']
@@ -378,7 +419,7 @@ export const mediaUtils = {
   /**
    * Create thumbnail from image
    */
-  async createThumbnail(file, maxWidth = 300, maxHeight = 300) {
+  async createThumbnail(file: File, maxWidth = 300, maxHeight = 300): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       
@@ -407,18 +448,27 @@ export const mediaUtils = {
           canvas.height = height;
           
           const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'));
+            return;
+          }
+          
           ctx.drawImage(img, 0, 0, width, height);
           
           canvas.toBlob((blob) => {
-            resolve(blob);
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Could not create blob from canvas'));
+            }
           }, 'image/jpeg', 0.8);
         };
         
-        img.onerror = reject;
-        img.src = e.target.result;
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
       };
       
-      reader.onerror = reject;
+      reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsDataURL(file);
     });
   }

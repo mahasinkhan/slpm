@@ -9,12 +9,15 @@ import { toast } from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Define content type
+type ContentType = 'news' | 'blog' | 'announcement' | 'event';
+
 interface ContentItem {
   id: string;
   title: string;
   excerpt: string;
   content: string;
-  type: 'news' | 'blog' | 'announcement' | 'event';
+  type: ContentType;
   category: string;
   tags: Array<{name: string}>;
   status: 'draft' | 'published' | 'archived';
@@ -39,14 +42,23 @@ const CMSManagement: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Form state
-  const [formData, setFormData] = useState({
+  // Form state with proper typing
+  const [formData, setFormData] = useState<{
+    title: string;
+    excerpt: string;
+    content: string;
+    type: ContentType;
+    category: string;
+    tags: string[];
+    featured: boolean;
+    publishNow: boolean;
+  }>({
     title: '',
     excerpt: '',
     content: '',
-    type: 'news' as const,
+    type: 'news',
     category: 'general',
-    tags: [] as string[],
+    tags: [],
     featured: false,
     publishNow: false
   });
@@ -380,7 +392,7 @@ const CMSManagement: React.FC = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Type *</label>
                     <select
                       value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value as 'news' | 'blog' })}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value as ContentType })}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="news">News</option>
