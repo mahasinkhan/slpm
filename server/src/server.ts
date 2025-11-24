@@ -1,22 +1,19 @@
 import dotenv from 'dotenv';
 
-// Only load .env file in development
-if (process.env.NODE_ENV !== 'production') {
+// Try to load .env file, but don't fail if it doesn't exist (for production)
+try {
   const result = dotenv.config();
-  
-  if (result.error) {
-    console.error('❌ Error loading .env file:', result.error);
-    process.exit(1);
+  if (!result.error) {
+    console.log('='.repeat(50));
+    console.log('✅ .env file loaded successfully');
+    console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? '✓ Set (' + process.env.DATABASE_URL.substring(0, 30) + '...)' : '✗ Missing');
+    console.log('🔍 JWT_SECRET:', process.env.JWT_SECRET ? '✓ Set' : '✗ Missing');
+    console.log('='.repeat(50));
   }
-  
+} catch (error) {
+  // .env file not found - that's OK in production
   console.log('='.repeat(50));
-  console.log('✅ .env file loaded successfully');
-  console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? '✓ Set (' + process.env.DATABASE_URL.substring(0, 30) + '...)' : '✗ Missing');
-  console.log('🔍 JWT_SECRET:', process.env.JWT_SECRET ? '✓ Set' : '✗ Missing');
-  console.log('='.repeat(50));
-} else {
-  console.log('='.repeat(50));
-  console.log('✅ Running in production mode');
+  console.log('ℹ️  No .env file found (production mode)');
   console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? '✓ Set' : '✗ Missing');
   console.log('🔍 JWT_SECRET:', process.env.JWT_SECRET ? '✓ Set' : '✗ Missing');
   console.log('='.repeat(50));
