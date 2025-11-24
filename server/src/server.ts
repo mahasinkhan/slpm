@@ -37,7 +37,8 @@ const corsOptions = {
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://slbnm-mwqne7n8h-mahasin-khans-projects.vercel.app'
+    'https://slbnm-mwqne7n8h-mahasin-khans-projects.vercel.app',
+    'https://slbnm-on0a3iq0e-mahasin-khans-projects.vercel.app'  // Add new URL
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
