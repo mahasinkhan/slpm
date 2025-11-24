@@ -7,6 +7,15 @@ import axios from 'axios';
 
 const prisma = new PrismaClient();
 
+// Helper function to create slug from tag name
+const createTagSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]/g, '');
+};
+
 // Helper function to determine media type from file
 const getMediaType = (mimetype: string, filename: string): MediaType => {
   // Check mimetype first
@@ -146,10 +155,12 @@ export const uploadMedia = async (
     const dimensions = (result.width && result.height) 
       ? `${result.width}x${result.height}` 
       : null;
-    const duration = result.duration ? Math.round(result.duration) : null;
+    
+    // Convert duration to string if it exists
+    const duration = result.duration ? Math.round(result.duration).toString() : null;
 
-    // Generate thumbnail for videos
-    let thumbnailUrl = null;
+    // Initialize with proper type annotation
+    let thumbnailUrl: string | null = null;
     if (mediaType === MediaType.VIDEO && result.public_id) {
       thumbnailUrl = cloudinary.url(result.public_id, {
         resource_type: 'video',
@@ -189,7 +200,10 @@ export const uploadMedia = async (
           tags: {
             connectOrCreate: tagArray.map(tag => ({
               where: { name: tag },
-              create: { name: tag }
+              create: { 
+                name: tag,
+                slug: createTagSlug(tag)
+              }
             }))
           }
         })
@@ -384,7 +398,10 @@ export const updateMedia = async (
         set: [], // Clear existing tags
         connectOrCreate: tagArray.map((tag: string) => ({
           where: { name: tag },
-          create: { name: tag }
+          create: { 
+            name: tag,
+            slug: createTagSlug(tag)
+          }
         }))
       };
     }
@@ -559,7 +576,7 @@ export const trackDownload = async (
   }
 };
 
-// **NEW: Download media file**
+// Download media file
 export const downloadMedia = async (
   req: AuthRequest,
   res: Response
@@ -591,7 +608,6 @@ export const downloadMedia = async (
     }
 
     // Extract public_id from Cloudinary URL
-    // Example URL: https://res.cloudinary.com/xxx/image/upload/v123/media/documents/filename.pdf
     const urlParts = media.url.split('/');
     const uploadIndex = urlParts.indexOf('upload');
     
@@ -635,10 +651,13 @@ export const downloadMedia = async (
     // Determine content type
     const contentType = getContentType(media.type, media.title);
 
+    // Cast response.data to Buffer to access length
+    const responseData = Buffer.from(response.data as ArrayBuffer);
+
     // Set response headers
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(media.title)}"`);
-    res.setHeader('Content-Length', response.data.length);
+    res.setHeader('Content-Length', responseData.length.toString());
     res.setHeader('Cache-Control', 'no-cache');
 
     // Track download (increment downloads count)
@@ -654,7 +673,7 @@ export const downloadMedia = async (
     console.log('File downloaded successfully');
 
     // Send the file
-    res.send(response.data);
+    res.send(responseData);
 
   } catch (error: any) {
     console.error('Download error:', error);

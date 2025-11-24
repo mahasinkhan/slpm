@@ -3,18 +3,7 @@
 import { Request, Response } from 'express';
 import visitorTrackingService from '../services/visitorTracking.service';
 import { VisitorType, VisitorStatus } from '@prisma/client';
-
-// Extended Request interface for authenticated routes
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: string;
-    status: string;
-  };
-}
+import { AuthRequest } from '../types';
 
 class VisitorTrackingController {
   /**

@@ -1,4 +1,4 @@
-// ==================== MERGED & ENHANCED CONTENT CONTROLLER ====================
+// ==================== FIXED CONTENT CONTROLLER ====================
 // File: server/src/controllers/content.controller.ts
 
 import { Request, Response } from 'express';
@@ -384,8 +384,8 @@ export class ContentController {
         metaKeywords
       } = req.body;
 
-      // Handle image upload if provided
-      let featuredImage = null;
+      // Handle image upload if provided - FIXED: Changed type annotation
+      let featuredImage: string | null = null;
       if (req.file) {
         const uploadResult = await uploadToCloudinary(req.file.buffer, 'content');
         featuredImage = uploadResult.secure_url;

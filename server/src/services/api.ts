@@ -1,7 +1,8 @@
 // src/services/api.ts
 // API Configuration and Service Layer for SL Brothers Backend Integration
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Use process.env instead of import.meta.env for Node.js environment
+const API_BASE_URL = process.env.API_URL || process.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Types based on Prisma schema
 export interface User {
@@ -76,13 +77,18 @@ class ApiService {
         },
       });
 
-      const data = await response.json();
+      const data: unknown = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Request failed');
+        // Type guard for error response
+        if (data && typeof data === 'object' && 'message' in data) {
+          throw new Error((data as { message: string }).message || 'Request failed');
+        }
+        throw new Error('Request failed');
       }
 
-      return data;
+      // Type assertion with validation
+      return data as ApiResponse<T>;
     } catch (error) {
       console.error('API Error:', error);
       return {

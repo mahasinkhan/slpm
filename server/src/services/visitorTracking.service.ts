@@ -1,7 +1,7 @@
 // services/visitorTracking.service.ts
 
 import { PrismaClient, VisitorType, VisitorStatus } from '@prisma/client';
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 import geoip from 'geoip-lite';
 
 const prisma = new PrismaClient();
@@ -136,10 +136,10 @@ class VisitorTrackingService {
             city: geo?.city || visitor.city,
             region: geo?.region || visitor.region,
             timezone: geo?.timezone || visitor.timezone,
-            device: deviceInfo.device.type || 'Desktop',
-            os: `${deviceInfo.os.name || 'Unknown'} ${deviceInfo.os.version || ''}`.trim(),
-            browser: deviceInfo.browser.name || 'Unknown',
-            browserVersion: deviceInfo.browser.version || undefined,
+            device: deviceInfo.device?.type || 'Desktop',
+            os: `${deviceInfo.os?.name || 'Unknown'} ${deviceInfo.os?.version || ''}`.trim(),
+            browser: deviceInfo.browser?.name || 'Unknown',
+            browserVersion: deviceInfo.browser?.version || undefined,
             userAgent,
             ...(email && { email, type: 'IDENTIFIED' as VisitorType }),
             ...(name && { name }),
@@ -161,10 +161,10 @@ class VisitorTrackingService {
             city: geo?.city || null,
             region: geo?.region || null,
             timezone: geo?.timezone || null,
-            device: deviceInfo.device.type || 'Desktop',
-            os: `${deviceInfo.os.name || 'Unknown'} ${deviceInfo.os.version || ''}`.trim(),
-            browser: deviceInfo.browser.name || 'Unknown',
-            browserVersion: deviceInfo.browser.version || undefined,
+            device: deviceInfo.device?.type || 'Desktop',
+            os: `${deviceInfo.os?.name || 'Unknown'} ${deviceInfo.os?.version || ''}`.trim(),
+            browser: deviceInfo.browser?.name || 'Unknown',
+            browserVersion: deviceInfo.browser?.version || undefined,
             screenResolution: screenResolution || undefined,
             userAgent,
             referrer: referrer || undefined,
@@ -236,9 +236,9 @@ class VisitorTrackingService {
             sessionId,
             entryPage,
             ipAddress,
-            device: deviceInfo.device.type || 'Desktop',
-            browser: deviceInfo.browser.name || 'Unknown',
-            os: `${deviceInfo.os.name || 'Unknown'} ${deviceInfo.os.version || ''}`.trim(),
+            device: deviceInfo.device?.type || 'Desktop',
+            browser: deviceInfo.browser?.name || 'Unknown',
+            os: `${deviceInfo.os?.name || 'Unknown'} ${deviceInfo.os?.version || ''}`.trim(),
             isActive
           }
         });
@@ -413,8 +413,8 @@ class VisitorTrackingService {
           ipAddress,
           country: geo?.country || undefined,
           city: geo?.city || undefined,
-          device: deviceInfo.device.type || 'Desktop',
-          browser: deviceInfo.browser.name || 'Unknown',
+          device: deviceInfo.device?.type || 'Desktop',
+          browser: deviceInfo.browser?.name || 'Unknown',
           timeOnSite: timeOnSite || 0,
           pageViews: pageViews || 1
         }

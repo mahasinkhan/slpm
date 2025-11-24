@@ -1,18 +1,21 @@
 // src/types/index.ts
 import { Request } from 'express';
 import { Role, InterviewStatus, EmploymentStatus, TrackingStatus } from '@prisma/client';
+import { JWTPayload } from '../utils/jwt.util';
 
 //  ==================== AUTH TYPES ====================
 
+// Extend Express Request type to add our custom user property
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JWTPayload;
+    }
+  }
+}
+
 export interface AuthRequest extends Request {
-  user?: {
-    firstName: any;
-    lastName: any;
-    avatar: null;
-    id: string;
-    email: string;
-    role: Role;
-  };
+  visitorId?: string;
 }
 
 export interface RegisterDTO {

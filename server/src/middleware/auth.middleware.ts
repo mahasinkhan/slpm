@@ -29,7 +29,18 @@ export const authenticateToken = async (
 
     try {
       const decoded = verifyToken(token);
+      
+      if (!decoded) {
+        res.status(401).json({
+          success: false,
+          message: 'Invalid or expired token'
+        });
+        return;
+      }
+      
+      // Simply assign decoded without type assertion since it already matches
       req.user = decoded;
+      
       next();
     } catch (error) {
       res.status(401).json({
@@ -88,7 +99,7 @@ export const authorize = (allowedRoles: Role[]) => {
       return;
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    if (!allowedRoles.includes(req.user.role as Role)) {
       res.status(403).json({
         success: false,
         message: 'Access denied. Insufficient permissions'

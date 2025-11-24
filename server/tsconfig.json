@@ -15,9 +15,11 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "types": ["node"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "types/**/*", "types"],
   "exclude": ["node_modules", "dist"],
   "ts-node": {
     "transpileOnly": true,
