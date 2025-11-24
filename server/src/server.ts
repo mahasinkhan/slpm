@@ -26,6 +26,10 @@ import { errorMiddleware } from './middleware/error.middleware';
 import { loggerMiddleware } from './middleware/logger.middleware';
 
 const app: Application = express();
+
+// Trust proxy - IMPORTANT for Render and rate limiting  
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -33,13 +37,12 @@ const corsOptions = {
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://slbnm.vercel.app'
+    'https://slbnm-mwqne7n8h-mahasin-khans-projects.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
-
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({limit: '50mb', extended: true }));
