@@ -20,7 +20,7 @@ try {
 }
 
 import express, { Application, Request, Response } from 'express';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import routes from './routes/index';
 import { errorMiddleware } from './middleware/error.middleware';
 import { loggerMiddleware } from './middleware/logger.middleware';
@@ -33,12 +33,27 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-const corsOptions = {
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://slpmw.vercel.app/',
-  ],
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://slpmw.vercel.app',
+];
+
+const corsOptions: CorsOptions = {
+  // Use a function to check origin dynamically
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if the requesting origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      // Log the disallowed origin for debugging purposes
+      console.log(`CORS blocked request from disallowed origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
