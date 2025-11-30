@@ -40,24 +40,21 @@ const allowedOrigins = [
 ];
 
 const corsOptions: CorsOptions = {
-  // Use a function to check origin dynamically
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Check if the requesting origin is in the allowed list
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      // Log the disallowed origin for debugging purposes
-      console.log(`CORS blocked request from disallowed origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'), false);
+    if (!origin) return callback(null, true); // Allow Postman, curl, mobile apps
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+
+    console.log(`❌ CORS blocked: ${origin}`);
+    return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
+
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({limit: '50mb', extended: true }));
