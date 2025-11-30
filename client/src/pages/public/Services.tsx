@@ -129,7 +129,7 @@ const HeroSection = () => {
             className="inline-block mb-6"
           >
             <div className="bg-[#C0C0C0]/20 backdrop-blur-sm rounded-full px-6 py-2 text-[#C0C0C0] font-semibold border border-[#C0C0C0]/30">
-              ✨ Comprehensive Solutions
+              âœ¨ Comprehensive Solutions
             </div>
           </motion.div>
 

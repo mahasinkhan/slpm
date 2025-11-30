@@ -309,7 +309,7 @@ const BlogPosts = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
             />
             <p className="text-xs text-gray-500 mt-2">
-              {content.trim().split(/\s+/).filter(Boolean).length} words · {Math.ceil(content.trim().split(/\s+/).filter(Boolean).length / 200)} min read
+              {content.trim().split(/\s+/).filter(Boolean).length} words Â· {Math.ceil(content.trim().split(/\s+/).filter(Boolean).length / 200)} min read
             </p>
           </div>
 
@@ -486,11 +486,11 @@ const BlogPosts = () => {
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
             <h3 className="text-sm font-semibold text-gray-900 mb-2">Quick Tips</h3>
             <ul className="text-xs text-gray-600 space-y-1">
-              <li>• Use engaging titles (60 characters max)</li>
-              <li>• Add a featured image (1200x630px recommended)</li>
-              <li>• Write clear excerpts (150-160 characters)</li>
-              <li>• Choose relevant tags (3-5 recommended)</li>
-              <li>• Optimize meta description for SEO</li>
+              <li>â€¢ Use engaging titles (60 characters max)</li>
+              <li>â€¢ Add a featured image (1200x630px recommended)</li>
+              <li>â€¢ Write clear excerpts (150-160 characters)</li>
+              <li>â€¢ Choose relevant tags (3-5 recommended)</li>
+              <li>â€¢ Optimize meta description for SEO</li>
             </ul>
           </div>
         </div>

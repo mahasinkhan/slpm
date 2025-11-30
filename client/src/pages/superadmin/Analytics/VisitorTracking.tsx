@@ -236,7 +236,7 @@ const VisitorTracking: React.FC = () => {
             onClick={() => setError(null)}
             className="ml-auto text-red-600 hover:text-red-800"
           >
-            ×
+            Ã—
           </button>
         </div>
       )}
@@ -449,7 +449,7 @@ const VisitorTracking: React.FC = () => {
                               ) : (
                                 <Monitor className="w-4 h-4" />
                               )}
-                              {visitor.device || 'Desktop'} • {visitor.browser || 'Unknown'}
+                              {visitor.device || 'Desktop'} â€¢ {visitor.browser || 'Unknown'}
                             </span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />

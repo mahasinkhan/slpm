@@ -643,7 +643,7 @@ const Contact: React.FC = () => {
             {/* Footer Placeholder (Optional) */}
             <footer className="py-10 bg-blue-950 text-center text-gray-400 text-sm">
                 <div className="container mx-auto px-4">
-                    © {new Date().getFullYear()} SL Brothers. All Rights Reserved.
+                    Â© {new Date().getFullYear()} SL Brothers. All Rights Reserved.
                 </div>
             </footer>
         </div>

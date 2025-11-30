@@ -52,7 +52,7 @@ const GlobalSettings = () => {
     smtpHost: 'smtp.sendgrid.net',
     smtpPort: 587,
     smtpUsername: 'apikey',
-    smtpPassword: '••••••••••••',
+    smtpPassword: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
     fromEmail: 'noreply@slbrothers.co.uk',
     fromName: 'SL Brothers Ltd',
     
@@ -65,8 +65,8 @@ const GlobalSettings = () => {
     // API Settings
     apiRateLimit: 1000,
     apiTimeout: 30,
-    apiKey: 'sk_live_••••••••••••••••••••',
-    webhookSecret: 'whsec_••••••••••••••',
+    apiKey: 'sk_live_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+    webhookSecret: 'whsec_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
     
     // Feature Flags
     maintenanceMode: false,
@@ -272,7 +272,7 @@ const GlobalSettings = () => {
         {/* General Settings */}
         {activeTab === 'general' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">General Settings 🌐</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">General Settings ðŸŒ</h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               <SettingsInput label="Site Name" value={settings.siteName} onChange={(val) => handleChange('siteName', val)} />
@@ -306,9 +306,9 @@ const GlobalSettings = () => {
                 value={settings.currency}
                 onChange={(val) => handleChange('currency', val)}
                 options={[
-                  { value: 'GBP', label: 'GBP (£)' },
+                  { value: 'GBP', label: 'GBP (Â£)' },
                   { value: 'USD', label: 'USD ($)' },
-                  { value: 'EUR', label: 'EUR (€)' }
+                  { value: 'EUR', label: 'EUR (â‚¬)' }
                 ]}
               />
             </div>
@@ -318,7 +318,7 @@ const GlobalSettings = () => {
         {/* Security Settings */}
         {activeTab === 'security' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Security Settings 🔒</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Security Settings ðŸ”’</h2>
             
             <div className="space-y-6">
               <ToggleSetting
@@ -354,7 +354,7 @@ const GlobalSettings = () => {
         {/* Email Settings */}
         {activeTab === 'email' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Configuration 📧</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Configuration ðŸ“§</h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               <SettingsInput
@@ -386,7 +386,7 @@ const GlobalSettings = () => {
         {/* Notifications Settings */}
         {activeTab === 'notifications' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Notification Settings 🔔</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Notification Settings ðŸ””</h2>
             
             <div className="space-y-4">
               <ToggleSetting
@@ -418,7 +418,7 @@ const GlobalSettings = () => {
         {/* API Settings */}
         {activeTab === 'api' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">API & Keys 🔑</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">API & Keys ðŸ”‘</h2>
             
             <div className="space-y-6">
               <div>
@@ -458,7 +458,7 @@ const GlobalSettings = () => {
         {/* Feature Flags */}
         {activeTab === 'features' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Feature Flags ⚡</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Feature Flags âš¡</h2>
             
             <div className="space-y-4">
               {[
@@ -484,7 +484,7 @@ const GlobalSettings = () => {
         {/* Performance Settings */}
         {activeTab === 'performance' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Performance Optimization ⚙️</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Performance Optimization âš™ï¸</h2>
             
             <div className="space-y-4">
               {[
@@ -513,7 +513,7 @@ const GlobalSettings = () => {
         {/* Backup Settings */}
         {activeTab === 'backup' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Backup Configuration 💾</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Backup Configuration ðŸ’¾</h2>
             
             <ToggleSetting
               label="Auto Backup"

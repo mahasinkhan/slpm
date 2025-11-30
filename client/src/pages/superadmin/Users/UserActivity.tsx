@@ -249,7 +249,7 @@ const generateInitialActivities = (count = 50): Activity[] => {
 
     const actions = [
         { action: 'logged_in', type: 'authentication', description: 'Logged in successfully', details: { method: '2FA', duration: '0.45s', country: 'UK' } },
-        { action: 'created_order', type: 'transaction', description: 'New E-commerce order placed', details: { orderId: 'ORD-' + Math.floor(Math.random() * 10000), amount: '£' + (Math.floor(Math.random() * 500) + 10).toFixed(2), items: Math.floor(Math.random() * 5) + 1 } },
+        { action: 'created_order', type: 'transaction', description: 'New E-commerce order placed', details: { orderId: 'ORD-' + Math.floor(Math.random() * 10000), amount: 'Â£' + (Math.floor(Math.random() * 500) + 10).toFixed(2), items: Math.floor(Math.random() * 5) + 1 } },
         { action: 'updated_profile', type: 'profile', description: 'Updated billing information', details: { fields: ['address', 'payment_method'], changes: 2 } },
         { action: 'viewed_report', type: 'analytics', description: 'Viewed GDPR compliance report', details: { report: 'GDPR Compliance', duration: '5m 34s', sensitivity: 'High' } },
         { action: 'security_alert', type: 'security', description: 'Suspicious login attempt blocked', details: { threat: 'Brute Force', target: 'login endpoint', outcome: 'Blocked' } },

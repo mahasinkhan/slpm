@@ -1,8 +1,9 @@
 // src/pages/auth/Login.tsx
+
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, Mail, Eye, EyeOff, AlertCircle, CheckCircle, ArrowRight, Sparkles } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -18,6 +19,12 @@ const Login = () => {
     setError('')
     setSuccess('')
 
+    // Basic validation
+    if (!email || !password) {
+      setError('Please enter both email and password')
+      return
+    }
+
     try {
       await login(email, password)
       setSuccess('Login successful! Redirecting...')
@@ -29,8 +36,8 @@ const Login = () => {
   const fillDemoCredentials = (role: 'superadmin' | 'admin' | 'employee') => {
     const credentials = {
       superadmin: { email: 'superadmin@slbrothers.co.uk', password: 'superadmin123' },
-      admin: { email: 'admin@slbrothers.co.uk', password: 'admin123' },
-      employee: { email: 'employee@slbrothers.co.uk', password: 'employee123' }
+      admin: { email: 'michael.c@slbrothers.co.uk', password: 'admin123' },
+      employee: { email: 'sarah.j@slbrothers.co.uk', password: 'employee123' }
     }
     setEmail(credentials[role].email)
     setPassword(credentials[role].password)
@@ -53,11 +60,9 @@ const Login = () => {
             alt="Modern office workspace"
             className="w-full h-full object-cover"
           />
-          {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#003366]/90 via-[#003366]/70 to-[#002244]/90" />
         </motion.div>
 
-        {/* Branding Content on Image */}
         <div className="absolute inset-0 flex items-center justify-center p-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -190,7 +195,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:border-[#003366] focus:outline-none transition-colors text-gray-900 text-sm sm:text-base"
-                    placeholder="••••••••"
+                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                     required
                   />
                   <button

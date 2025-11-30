@@ -292,7 +292,7 @@ const ServicesSnapshot = () => {
               <ul className="space-y-2">
                 {service.items.map((item) => (
                   <li key={item} className="flex items-start space-x-2">
-                    <span className="text-accent mt-1">✓</span>
+                    <span className="text-accent mt-1">âœ“</span>
                     <span className="text-accent-light">{item}</span>
                   </li>
                 ))}
@@ -471,7 +471,7 @@ const NewsInsights = () => {
                 <div className="p-6">
                   <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                     <span>{article.date}</span>
-                    <span>•</span>
+                    <span>â€¢</span>
                     <span className="text-primary font-semibold">{article.category}</span>
                   </div>
                   <h3 className="text-xl font-bold text-primary mb-2">
@@ -564,7 +564,7 @@ const ContactSection = () => {
             <div className="space-y-4">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-white">📍</span>
+                  <span className="text-white">ðŸ“</span>
                 </div>
                 <div>
                   <h4 className="font-semibold text-primary mb-1">Office Address</h4>
@@ -577,7 +577,7 @@ const ContactSection = () => {
               
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-white">📧</span>
+                  <span className="text-white">ðŸ“§</span>
                 </div>
                 <div>
                   <h4 className="font-semibold text-primary mb-1">Email</h4>
@@ -587,7 +587,7 @@ const ContactSection = () => {
               
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-white">📞</span>
+                  <span className="text-white">ðŸ“ž</span>
                 </div>
                 <div>
                   <h4 className="font-semibold text-primary mb-1">Phone</h4>

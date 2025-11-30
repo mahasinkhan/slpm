@@ -152,7 +152,7 @@ const News = () => {
         <div className="text-center max-w-md">
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">⚠️</span>
+              <span className="text-3xl">âš ï¸</span>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Oops! Something went wrong
@@ -227,7 +227,7 @@ const News = () => {
           <div className="text-center py-16">
             <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md mx-auto">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-4xl">📰</span>
+                <span className="text-4xl">ðŸ“°</span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">No news found</h3>
               <p className="text-gray-600 mb-6">
@@ -265,7 +265,7 @@ const News = () => {
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                          <span className="text-white text-6xl opacity-50">📰</span>
+                          <span className="text-white text-6xl opacity-50">ðŸ“°</span>
                         </div>
                       )}
                       <div className="absolute top-4 left-4">
@@ -334,7 +334,7 @@ const News = () => {
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                          <span className="text-white text-5xl opacity-50">📰</span>
+                          <span className="text-white text-5xl opacity-50">ðŸ“°</span>
                         </div>
                       )}
                       {item.category && (

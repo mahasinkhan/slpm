@@ -201,7 +201,7 @@ const MissionVision = () => {
               <div>
                 <h2 className="text-3xl font-bold text-primary mb-4 tracking-tighter">Our Vision</h2>
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  To become a **global leader** in bridging education, artificial intelligence, and research—creating 
+                  To become a **global leader** in bridging education, artificial intelligence, and researchâ€”creating 
                   a future where technology enhances human potential and drives positive societal transformation.
                 </p>
               </div>
@@ -253,7 +253,7 @@ const CoreValues = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4 tracking-tighter">
-            Our Core Values 💎
+            Our Core Values ðŸ’Ž
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             The principles that guide everything we do at SL Brothers Ltd
@@ -404,7 +404,7 @@ const CustomerImpact = () => {
                   className="text-center mb-16"
               >
                   <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4 tracking-tighter">
-                      Driving Real-World Impact 🌟
+                      Driving Real-World Impact ðŸŒŸ
                   </h2>
                   <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                       See what our partners and clients say about working with our multidisciplinary teams.
@@ -514,7 +514,7 @@ const CompanyInfo = () => {
             className="md:col-span-7"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-primary mb-12 tracking-tighter">
-              Company Information 📍
+              Company Information ðŸ“
             </h2>
 
             <div className="grid md:grid-cols-2 gap-x-8 gap-y-10">
@@ -592,7 +592,7 @@ const CallToAction = () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
             <div className="lg:w-2/3">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tighter">
-                Ready to Work With Us? 🤝
+                Ready to Work With Us? ðŸ¤
               </h2>
               <p className="text-xl text-accent-light/80">
                 Let's discuss how SL Brothers Ltd can help transform your organization.

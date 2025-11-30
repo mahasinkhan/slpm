@@ -1,657 +1,474 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import {
-    Users,
-    Briefcase,
-    TrendingUp,
-    DollarSign, // Used for generic finance
-    UserPlus,
-    FileText,
-    Calendar,
-    Clock,
-    CheckCircle,
-    AlertCircle,
-    Activity,
-    BarChart3,
-    PieChart,
-    ArrowUp,
-    ArrowDown,
-    MoreVertical,
-    Search,
-    Filter,
-    Download,
-    Bell,
-    Settings,
-    LogOut,
-    Menu,
-    X,
-    Home,
-    Building,
-    Target,
-    Award,
-    Zap,
-    Mail,
-    Phone,
-    MapPin,
-    HeartHandshake, // New icon for HR/Compliance
-    ThumbsUp // New icon for performance
-} from 'lucide-react'
+// pages/admin/AdminDashboard.tsx - IMPROVED DESIGN WITH DATA VALIDATION
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AdminLayout from './AdminLayout';
+import AdminHeader from './components/AdminHeader';
+import StatsCard from './components/StatsCard';
 
-// --- Main Dashboard Component ---
+interface Stats {
+  totalJobs: number;
+  activeJobs: number;
+  draftJobs: number;
+  totalApplications: number;
+  newApplications: number;
+  underReviewApplications: number;
+  shortlistedApplications: number;
+  rejectedApplications: number;
+  totalEmployees: number;
+  upcomingInterviews: number;
+}
 
-const AdminDashboard = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(false)
-    const [selectedPeriod, setSelectedPeriod] = useState('month')
+interface RecentActivity {
+  id: string;
+  type: 'application' | 'job' | 'interview' | 'employee';
+  title: string;
+  description: string;
+  time: string;
+  icon: string;
+}
 
+const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState<Stats>({
+    totalJobs: 0,
+    activeJobs: 0,
+    draftJobs: 0,
+    totalApplications: 0,
+    newApplications: 0,
+    underReviewApplications: 0,
+    shortlistedApplications: 0,
+    rejectedApplications: 0,
+    totalEmployees: 0,
+    upcomingInterviews: 0
+  });
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      // In production, fetch from API
+      // const response = await fetch('/api/admin/dashboard/stats');
+      // const data = await response.json();
+      
+      // Validate data consistency
+      // validateStats(data);
+      // setStats(data);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Data validation function to ensure consistency
+  const validateStats = (data: Partial<Stats>): Stats => {
+    const newApps = data.newApplications || 0;
+    const underReview = data.underReviewApplications || 0;
+    const shortlisted = data.shortlistedApplications || 0;
+    const rejected = data.rejectedApplications || 0;
+    
+    // Calculate total from sub-categories
+    const calculatedTotal = newApps + underReview + shortlisted + rejected;
+    
+    // Use calculated total to ensure consistency
+    return {
+      totalJobs: data.totalJobs || 0,
+      activeJobs: data.activeJobs || 0,
+      draftJobs: data.draftJobs || 0,
+      totalApplications: calculatedTotal, // Always calculated, never from API
+      newApplications: newApps,
+      underReviewApplications: underReview,
+      shortlistedApplications: shortlisted,
+      rejectedApplications: rejected,
+      totalEmployees: data.totalEmployees || 0,
+      upcomingInterviews: data.upcomingInterviews || 0
+    };
+  };
+
+  // Mock data with validation
+  useEffect(() => {
+    const mockData = {
+      totalJobs: 12,
+      activeJobs: 8,
+      draftJobs: 4,
+      newApplications: 24,
+      underReviewApplications: 32,
+      shortlistedApplications: 18,
+      rejectedApplications: 82,
+      totalEmployees: 45,
+      upcomingInterviews: 7
+    };
+
+    // Validate and set stats
+    const validatedStats = validateStats(mockData);
+    setStats(validatedStats);
+
+    setRecentActivities([
+      {
+        id: '1',
+        type: 'application',
+        title: 'New Application',
+        description: 'John Smith applied for Senior Frontend Developer',
+        time: '5 minutes ago',
+        icon: '📨'
+      },
+      {
+        id: '2',
+        type: 'job',
+        title: 'Job Published',
+        description: 'Product Designer position is now live on careers page',
+        time: '2 hours ago',
+        icon: '🌐'
+      },
+      {
+        id: '3',
+        type: 'interview',
+        title: 'Interview Scheduled',
+        description: 'Interview with Sarah Johnson for Backend Engineer',
+        time: '3 hours ago',
+        icon: '🎤'
+      },
+      {
+        id: '4',
+        type: 'application',
+        title: 'Application Shortlisted',
+        description: 'Michael Brown moved to shortlist for Marketing Manager',
+        time: '5 hours ago',
+        icon: '⭐'
+      },
+      {
+        id: '5',
+        type: 'employee',
+        title: 'New Employee Added',
+        description: 'Emma Wilson joined as UX Designer',
+        time: '1 day ago',
+        icon: '👤'
+      }
+    ]);
+
+    setLoading(false);
+  }, []);
+
+  const quickActions = [
+    {
+      title: 'Create New Job',
+      description: 'Post a new job position',
+      icon: '➕',
+      color: 'blue' as const,
+      link: '/admin/jobs/create'
+    },
+    {
+      title: 'Register Employee',
+      description: 'Add a new employee',
+      icon: '👤',
+      color: 'green' as const,
+      link: '/admin/employees/register'
+    },
+    {
+      title: 'Schedule Interview',
+      description: 'Book an interview slot',
+      icon: '📅',
+      color: 'purple' as const,
+      link: '/admin/interviews/schedule'
+    },
+    {
+      title: 'View Applications',
+      description: 'Review new applications',
+      icon: '📋',
+      color: 'orange' as const,
+      link: '/admin/applications/new'
+    }
+  ];
+
+  const getColorClasses = (color: string) => {
+    const colors: { [key: string]: string } = {
+      blue: 'bg-blue-500 text-blue-600 bg-opacity-10',
+      green: 'bg-green-500 text-green-600 bg-opacity-10',
+      purple: 'bg-purple-500 text-purple-600 bg-opacity-10',
+      orange: 'bg-orange-500 text-orange-600 bg-opacity-10'
+    };
+    return colors[color] || colors.blue;
+  };
+
+  // Calculate percentages for visual feedback
+  const getApplicationPercentage = (count: number) => {
+    return stats.totalApplications > 0 
+      ? Math.round((count / stats.totalApplications) * 100) 
+      : 0;
+  };
+
+  if (loading) {
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
-            <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col min-h-screen lg:ml-64">
-                {/* Top Navigation */}
-                <TopNav setSidebarOpen={setSidebarOpen} />
-
-                {/* Dashboard Content */}
-                <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                    {/* Welcome Section */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-6 sm:mb-8"
-                    >
-                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#003366] mb-2">
-                            Welcome back, Admin! 👋
-                        </h1>
-                        <p className="text-sm sm:text-base text-gray-600">
-                            Here's the latest data for **SL Brothers** this morning.
-                        </p>
-                    </motion.div>
-
-                    {/* Stats Cards */}
-                    <StatsCards />
-
-                    {/* Period Selector */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                        <h2 className="text-xl sm:text-2xl font-bold text-[#003366]">Performance Overview</h2>
-                        <div className="flex items-center space-x-2">
-                            {['week', 'month', 'quarter'].map((period) => (
-                                <button
-                                    key={period}
-                                    onClick={() => setSelectedPeriod(period)}
-                                    className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all ${
-                                        selectedPeriod === period
-                                            ? 'bg-[#003366] text-white'
-                                            : 'bg-white text-gray-600 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    {period.charAt(0).toUpperCase() + period.slice(1)}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Charts Section */}
-                    <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
-                        <RevenueChart />
-                        <ProjectsChart />
-                    </div>
-
-                    {/* Compliance, Reviews, and Quick Data Tables */}
-                    <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
-                        <ComplianceWidget />
-                        <PerformanceReviews />
-                        <RecentEmployees />
-                    </div>
-
-                    {/* Final Activity Feed */}
-                    <ActivityFeed />
-                </main>
-            </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          </div>
         </div>
-    )
-}
+      </AdminLayout>
+    );
+  }
 
-// --- Component Definitions (Modified & New) ---
+  return (
+    <AdminLayout>
+      <AdminHeader
+        title="Dashboard"
+        subtitle="Welcome back! Here's what's happening today."
+        showPublicSiteButton={true}
+      />
 
-const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
-    const menuItems = [
-        { icon: Home, label: 'Dashboard', active: true },
-        { icon: Users, label: 'Staff Directory', count: 45 },
-        { icon: Briefcase, label: 'Projects', count: 12 },
-        { icon: HeartHandshake, label: 'HR & Payroll', count: 3, alert: true }, // Highlighted for UK compliance
-        { icon: FileText, label: 'Documents' },
-        { icon: Calendar, label: 'Annual Leave' }, // UK English
-        { icon: DollarSign, label: 'Finance' },
-        { icon: BarChart3, label: 'Reports' },
-        { icon: Settings, label: 'System Settings' }
-    ]
-
-    return (
-        <>
-            {/* Mobile Overlay */}
-            {sidebarOpen && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
-
-            {/* Sidebar */}
-            <motion.aside
-                initial={false}
-                animate={{ x: sidebarOpen ? 0 : '-100%' }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-50 lg:translate-x-0 lg:static"
-            >
-                <div className="flex flex-col h-full">
-                    {/* Logo */}
-                    <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                        <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#003366] to-[#004488] rounded-lg flex items-center justify-center">
-                                <span className="text-white font-black text-lg">SLB</span>
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-[#003366]">SL Brothers</h3>
-                                <p className="text-xs text-gray-500">Admin Panel</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setSidebarOpen(false)}
-                            className="lg:hidden text-gray-500 hover:text-gray-700"
-                        >
-                            <X size={24} />
-                        </button>
-                    </div>
-
-                    {/* Menu Items */}
-                    <nav className="flex-1 p-4 overflow-y-auto">
-                        <ul className="space-y-1">
-                            {menuItems.map((item, index) => (
-                                <li key={index}>
-                                    <button
-                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
-                                            item.active
-                                                ? 'bg-[#003366] text-white'
-                                                : 'text-gray-700 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        <div className="flex items-center space-x-3">
-                                            <item.icon size={20} />
-                                            <span className="font-medium">{item.label}</span>
-                                        </div>
-                                        {item.count && (
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                                item.active ? 'bg-white/20' : 'bg-[#003366]/10 text-[#003366]'
-                                            }`}>
-                                                {item.count}
-                                            </span>
-                                        )}
-                                        {item.alert && !item.active && (
-                                            <AlertCircle size={16} className="text-red-500 ml-1" />
-                                        )}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </nav>
-
-                    {/* User Profile */}
-                    <div className="p-4 border-t border-gray-200">
-                        <div className="flex items-center space-x-3 mb-3">
-                            <img
-                                src="https://i.pravatar.cc/150?img=12"
-                                alt="Admin"
-                                className="w-10 h-10 rounded-full"
-                            />
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-[#003366] text-sm truncate">John Admin</p>
-                                <p className="text-xs text-gray-500 truncate">admin@slbrothers.co.uk</p>
-                            </div>
-                        </div>
-                        <button className="w-full flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium">
-                            <LogOut size={18} />
-                            <span>Log Out</span>
-                        </button>
-                    </div>
-                </div>
-            </motion.aside>
-        </>
-    )
-}
-
-const TopNav = ({ setSidebarOpen }) => {
-    return (
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-            <div className="flex items-center justify-between p-4 sm:p-6">
-                {/* Left Side */}
-                <div className="flex items-center space-x-4">
-                    <button
-                        onClick={() => setSidebarOpen(true)}
-                        className="lg:hidden text-gray-500 hover:text-gray-700"
-                    >
-                        <Menu size={24} />
-                    </button>
-                    
-                    {/* Search Bar */}
-                    <div className="hidden sm:flex items-center bg-gray-100 rounded-lg px-4 py-2 w-64 lg:w-96">
-                        <Search className="text-gray-400 mr-2" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search staff, projects, or reports..." // UK-friendly search
-                            className="bg-transparent border-none outline-none text-sm w-full"
-                        />
-                    </div>
-                </div>
-
-                {/* Right Side */}
-                <div className="flex items-center space-x-2 sm:space-x-4">
-                    {/* Mobile Search */}
-                    <button className="sm:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                        <Search size={20} />
-                    </button>
-
-                    {/* Notifications */}
-                    <button className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                        <Bell size={20} />
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-                    </button>
-
-                    {/* Settings */}
-                    <button className="hidden sm:block p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                        <Settings size={20} />
-                    </button>
-
-                    {/* Profile (Desktop) */}
-                    <div className="hidden lg:flex items-center space-x-3 pl-4 border-l border-gray-200">
-                        <img
-                            src="https://i.pravatar.cc/150?img=12"
-                            alt="Admin"
-                            className="w-8 h-8 rounded-full"
-                        />
-                        <div className="text-sm">
-                            <p className="font-semibold text-[#003366]">John Admin</p>
-                            <p className="text-xs text-gray-500">Super Admin</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-    )
-}
-
-const StatsCards = () => {
-    const stats = [
-        {
-            icon: Users,
-            label: 'Total Staff', // Updated to 'Staff'
-            value: '245',
-            change: '+12%',
-            positive: true,
-            color: 'from-blue-500 to-blue-600'
-        },
-        {
-            icon: Briefcase,
-            label: 'Active Projects',
-            value: '48',
-            change: '+8%',
-            positive: true,
-            color: 'from-purple-500 to-purple-600'
-        },
-        {
-            icon: DollarSign,
-            label: 'YTD Revenue', // Localised currency format
-            value: '£2.4M',
-            change: '+23%',
-            positive: true,
-            color: 'from-green-500 to-green-600'
-        },
-        {
-            icon: Target,
-            label: 'KPI Completion', // More business-focused
-            value: '88%',
-            change: '-2%',
-            positive: false,
-            color: 'from-orange-500 to-orange-600'
-        }
-    ]
-
-    return (
+      <div className="p-4 sm:p-6 lg:p-8">
+        {/* Enhanced Stats Grid with Better Visual Hierarchy */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            {stats.map((stat, index) => (
-                <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ y: -5 }}
-                    className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all"
-                >
-                    <div className="flex items-start justify-between mb-4">
-                        <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center`}>
-                            <stat.icon className="text-white" size={24} />
-                        </div>
-                        <div className={`flex items-center space-x-1 text-xs sm:text-sm font-bold ${
-                            stat.positive ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                            {stat.positive ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
-                            <span>{stat.change}</span>
-                        </div>
-                    </div>
-                    <h3 className="text-2xl sm:text-3xl font-black text-[#003366] mb-1">{stat.value}</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">{stat.label}</p>
-                </motion.div>
-            ))}
+          <StatsCard
+            title="Total Jobs"
+            value={stats.totalJobs}
+            subtitle={`${stats.activeJobs} active, ${stats.draftJobs} draft`}
+            icon="💼"
+            color="blue"
+            clickable
+            link="/admin/jobs"
+          />
+          <StatsCard
+            title="Applications"
+            value={stats.totalApplications}
+            subtitle={`${stats.newApplications} new`}
+            icon="📨"
+            color="green"
+            clickable
+            link="/admin/applications"
+          />
+          <StatsCard
+            title="Employees"
+            value={stats.totalEmployees}
+            subtitle="View all"
+            icon="👥"
+            color="purple"
+            clickable
+            link="/admin/employees"
+          />
+          <StatsCard
+            title="Interviews"
+            value={stats.upcomingInterviews}
+            subtitle="upcoming"
+            icon="🎤"
+            color="orange"
+            clickable
+            link="/admin/interviews"
+          />
         </div>
-    )
-}
 
-const RevenueChart = () => {
-    return (
-        <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg lg:col-span-1"
-        >
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-[#003366] mb-1">Q4 Revenue Forecast</h3>
-                    <p className="text-xs sm:text-sm text-gray-500">Tracking against annual budget in GBP</p>
-                </div>
-                <button className="p-2 hover:bg-gray-100 rounded-lg">
-                    <Download size={20} className="text-gray-400" />
-                </button>
-            </div>
-
-            {/* Chart Area */}
-            <div className="h-64 flex items-end justify-between space-x-2">
-                {[65, 45, 75, 50, 85, 60, 90, 70, 95, 80, 88, 92].slice(8).map((height, idx) => ( // Showing only 4 months for Q4
-                    <motion.div
-                        key={idx}
-                        initial={{ height: 0 }}
-                        animate={{ height: `${height}%` }}
-                        transition={{ delay: idx * 0.1, duration: 0.5 }}
-                        className="flex-1 bg-gradient-to-t from-[#003366] to-[#004488] rounded-t-lg min-w-0 hover:from-[#004488] hover:to-[#005599] transition-all cursor-pointer relative"
-                    >
-                         {/* Simple tooltip for added value */}
-                         <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-[#003366] hidden sm:block">
-                            {`£${(height / 10).toFixed(1)}K`}
-                        </span>
-                    </motion.div>
-                ))}
-            </div>
-
-            <div className="flex justify-between mt-4 text-xs text-gray-500">
-                <span>Oct</span>
-                <span>Nov</span>
-                <span>Dec</span>
-                <span>Jan (F)</span>
-            </div>
-        </motion.div>
-    )
-}
-
-const ProjectsChart = () => {
-    const projectStats = [
-        { label: 'Completed', value: 65, color: 'text-green-600' },
-        { label: 'In Progress', value: 25, color: 'text-blue-600' },
-        { label: 'Pending', value: 10, color: 'text-orange-600' }
-    ]
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg lg:col-span-1"
-        >
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-[#003366] mb-1">Project Status</h3>
-                    <p className="text-xs sm:text-sm text-gray-500">Current project distribution (48 total)</p>
-                </div>
-                <button className="p-2 hover:bg-gray-100 rounded-lg">
-                    <Download size={20} className="text-gray-400" />
-                </button>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
-                {/* Pie Chart Representation */}
-                <div className="relative w-40 h-40 flex-shrink-0">
-                    <svg className="w-full h-full transform -rotate-90">
-                        <circle cx="80" cy="80" r="70" fill="none" stroke="#e5e7eb" strokeWidth="20" />
-                        {/* Completed */}
-                        <circle 
-                            cx="80" cy="80" r="70" fill="none" stroke="#10b981" strokeWidth="20"
-                            strokeDasharray={`${65 * 4.4} 440`}
-                        />
-                        {/* In Progress */}
-                        <circle 
-                            cx="80" cy="80" r="70" fill="none" stroke="#3b82f6" strokeWidth="20"
-                            strokeDasharray={`${25 * 4.4} 440`} strokeDashoffset={-65 * 4.4}
-                        />
-                        {/* Pending */}
-                        <circle 
-                            cx="80" cy="80" r="70" fill="none" stroke="#f97316" strokeWidth="20"
-                            strokeDasharray={`${10 * 4.4} 440`} strokeDashoffset={-(65 + 25) * 4.4}
-                        />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                            <p className="text-2xl font-black text-[#003366]">48</p>
-                            <p className="text-xs text-gray-500">Projects</p>
-                        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Quick Actions */}
+          <div className="lg:col-span-1 order-2 lg:order-1">
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="space-y-3">
+                {quickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => navigate(action.link)}
+                    className="w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition text-left active:scale-95"
+                  >
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${getColorClasses(action.color)}`}>
+                      {action.icon}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{action.title}</h3>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate">{action.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="lg:col-span-2 order-1 lg:order-2">
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Recent Activity</h2>
+                <button className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium">
+                  View All
+                </button>
+              </div>
+              <div className="space-y-3 sm:space-y-4">
+                {recentActivities.map((activity) => (
+                  <div key={activity.id} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
+                      {activity.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 text-xs sm:text-sm">{activity.title}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{activity.description}</p>
+                      <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Overview Sections with Progress Bars */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-6">
+          {/* Job Overview - Enhanced */}
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Job Overview</h2>
+            <div className="space-y-4">
+              {/* Active Jobs */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm sm:text-base text-gray-600">Active Jobs</span>
+                  <span className="font-semibold text-green-600 text-base sm:text-lg">{stats.activeJobs}</span>
                 </div>
-
-                {/* Legend */}
-                <div className="space-y-3 flex-1">
-                    {projectStats.map((stat, idx) => (
-                        <div key={idx} className="flex items-center justify-between min-w-[180px]">
-                            <div className="flex items-center space-x-2">
-                                <div className={`w-3 h-3 rounded-full ${
-                                    stat.label === 'Completed' ? 'bg-green-600' :
-                                    stat.label === 'In Progress' ? 'bg-blue-600' :
-                                    'bg-orange-600'
-                                }`} />
-                                <span className="text-sm text-gray-700">{stat.label}</span>
-                            </div>
-                            <span className={`text-sm font-bold ${stat.color}`}>{stat.value}%</span>
-                        </div>
-                    ))}
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(stats.activeJobs / stats.totalJobs) * 100}%` }}
+                  ></div>
                 </div>
+              </div>
+
+              {/* Draft Jobs */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm sm:text-base text-gray-600">Draft Jobs</span>
+                  <span className="font-semibold text-yellow-600 text-base sm:text-lg">{stats.draftJobs}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(stats.draftJobs / stats.totalJobs) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Total Summary */}
+              <div className="pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm sm:text-base font-medium text-gray-900">Total Openings</span>
+                  <span className="font-bold text-blue-600 text-lg sm:text-xl">{stats.totalJobs}</span>
+                </div>
+              </div>
             </div>
-        </motion.div>
-    )
-}
+            <button
+              onClick={() => navigate('/admin/jobs')}
+              className="mt-4 w-full py-2 sm:py-2.5 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition font-medium text-sm sm:text-base active:scale-95"
+            >
+              Manage Jobs
+            </button>
+          </div>
 
-const RecentEmployees = () => {
-    const employees = [
-        { name: 'Sarah Johnson', role: 'Frontend Developer', avatar: 'https://i.pravatar.cc/150?img=1', status: 'active' },
-        { name: 'Michael Chen', role: 'Backend Developer', avatar: 'https://i.pravatar.cc/150?img=3', status: 'active' },
-        { name: 'Emma Wilson', role: 'UI/UX Designer', avatar: 'https://i.pravatar.cc/150?img=5', status: 'away' },
-        { name: 'James Brown', role: 'Project Manager', avatar: 'https://i.pravatar.cc/150?img=7', status: 'active' }
-    ]
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg lg:col-span-1"
-        >
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl font-bold text-[#003366]">Recent Hires</h3>
-                <button className="text-xs sm:text-sm text-[#003366] font-semibold hover:text-[#004488]">
-                    View All Staff
-                </button>
+          {/* Application Pipeline - Enhanced with Progress Visualization */}
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Application Pipeline</h2>
+              <div className="text-right">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.totalApplications}</div>
+                <div className="text-xs text-gray-500">Total</div>
+              </div>
             </div>
-
-            <div className="space-y-3 sm:space-y-4">
-                {employees.map((employee, idx) => (
-                    <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                        <div className="flex items-center space-x-3">
-                            <div className="relative">
-                                <img
-                                    src={employee.avatar}
-                                    alt={employee.name}
-                                    className="w-10 h-10 rounded-full"
-                                />
-                                <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                                    employee.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                                }`} />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-[#003366] text-sm">{employee.name}</p>
-                                <p className="text-xs text-gray-500">{employee.role}</p>
-                            </div>
-                        </div>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg">
-                            <MoreVertical size={16} className="text-gray-400" />
-                        </button>
-                    </motion.div>
-                ))}
-            </div>
-        </motion.div>
-    )
-}
-
-const PerformanceReviews = () => {
-    const reviews = [
-        { name: 'Ben Thompson', rating: 'Excellent', date: '01 Nov', color: 'text-green-600', icon: ThumbsUp },
-        { name: 'Laura Hughes', rating: 'Good', date: '25 Oct', color: 'text-blue-600', icon: Award },
-        { name: 'Chris O\'Neill', rating: 'Needs Improvement', date: '15 Oct', color: 'text-red-600', icon: AlertCircle },
-        { name: 'Hannah Patel', rating: 'Pending', date: 'Scheduled', color: 'text-gray-600', icon: Clock }
-    ]
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg lg:col-span-1"
-        >
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl font-bold text-[#003366]">Performance Reviews</h3>
-                <button className="text-xs sm:text-sm text-[#003366] font-semibold hover:text-[#004488]">
-                    View Calendar
-                </button>
-            </div>
-
+            
             <div className="space-y-4">
-                {reviews.map((review, idx) => (
-                    <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                        <div className="flex items-center space-x-3">
-                            <review.icon size={20} className={review.color} />
-                            <div>
-                                <p className="font-semibold text-gray-900 text-sm">{review.name}</p>
-                                <p className="text-xs text-gray-500">{review.rating}</p>
-                            </div>
-                        </div>
-                        <span className="text-sm font-medium text-gray-600">{review.date}</span>
-                    </motion.div>
-                ))}
+              {/* New Applications */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm sm:text-base text-gray-600">New</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{getApplicationPercentage(stats.newApplications)}%</span>
+                    <span className="font-semibold text-blue-600 text-base sm:text-lg">{stats.newApplications}</span>
+                  </div>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${getApplicationPercentage(stats.newApplications)}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Under Review */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <span className="text-sm sm:text-base text-gray-600">Under Review</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{getApplicationPercentage(stats.underReviewApplications)}%</span>
+                    <span className="font-semibold text-yellow-600 text-base sm:text-lg">{stats.underReviewApplications}</span>
+                  </div>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${getApplicationPercentage(stats.underReviewApplications)}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Shortlisted */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="text-sm sm:text-base text-gray-600">Shortlisted</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{getApplicationPercentage(stats.shortlistedApplications)}%</span>
+                    <span className="font-semibold text-green-600 text-base sm:text-lg">{stats.shortlistedApplications}</span>
+                  </div>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${getApplicationPercentage(stats.shortlistedApplications)}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Rejected */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span className="text-sm sm:text-base text-gray-600">Rejected</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{getApplicationPercentage(stats.rejectedApplications)}%</span>
+                    <span className="font-semibold text-red-600 text-base sm:text-lg">{stats.rejectedApplications}</span>
+                  </div>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${getApplicationPercentage(stats.rejectedApplications)}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
-        </motion.div>
-    )
-}
 
-const ComplianceWidget = () => {
-    const complianceItems = [
-        { label: 'Pending Leave Requests', value: 3, icon: Calendar, color: 'bg-orange-100 text-orange-600' },
-        { label: 'Overdue Compliance Training', value: 1, icon: AlertCircle, color: 'bg-red-100 text-red-600' },
-        { label: 'Updated Policy Signatures', value: 'Complete', icon: CheckCircle, color: 'bg-green-100 text-green-600' }
-    ]
+            <button
+              onClick={() => navigate('/admin/applications')}
+              className="mt-4 w-full py-2 sm:py-2.5 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition font-medium text-sm sm:text-base active:scale-95"
+            >
+              Review Applications
+            </button>
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+};
 
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg lg:col-span-1"
-        >
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl font-bold text-[#003366]">HR & Compliance</h3>
-                <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
-                    <HeartHandshake size={20} />
-                </button>
-            </div>
-
-            <div className="space-y-4">
-                {complianceItems.map((item, idx) => (
-                    <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="flex items-center space-x-4 p-3 border border-gray-100 rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${item.color}`}>
-                            <item.icon size={20} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 text-sm">{item.label}</p>
-                        </div>
-                        <span className="font-black text-lg text-[#003366]">{item.value}</span>
-                    </motion.div>
-                ))}
-            </div>
-        </motion.div>
-    )
-}
-
-
-const ActivityFeed = () => {
-    const activities = [
-        { icon: UserPlus, text: '**Sarah Johnson** started her role as Frontend Developer', time: '2 hours ago', color: 'text-green-600' },
-        { icon: Briefcase, text: 'New project **E-Learning Platform** initiated', time: '4 hours ago', color: 'text-blue-600' },
-        { icon: CheckCircle, text: 'Mobile App Redesign **milestone completed**', time: '6 hours ago', color: 'text-purple-600' },
-        { icon: AlertCircle, text: '**AI Chatbot Integration** project flagged as at-risk', time: '8 hours ago', color: 'text-red-600' },
-        { icon: FileText, text: 'Q4 Budget report submitted for sign-off', time: '1 day ago', color: 'text-gray-600' }
-    ]
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg"
-        >
-            <h3 className="text-lg sm:text-xl font-bold text-[#003366] mb-4 sm:mb-6">System Activity Log</h3>
-            <div className="space-y-4">
-                {activities.map((activity, idx) => (
-                    <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                        <div className={`w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 ${activity.color}`}>
-                            <activity.icon size={16} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-700" dangerouslySetInnerHTML={{ __html: activity.text }} />
-                            <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
-        </motion.div>
-    )
-}
-
-export default AdminDashboard
+export default AdminDashboard;

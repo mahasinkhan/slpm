@@ -146,7 +146,7 @@ const HeroSection = () => {
                         className="inline-block mb-6"
                     >
                         <div className="bg-[#C0C0C0]/20 backdrop-blur-sm rounded-full px-4 py-2 md:px-8 md:py-3 text-[#C0C0C0] font-bold text-sm md:text-lg shadow-2xl border border-[#C0C0C0]/30">
-                            🚀 Innovation in Action
+                            ðŸš€ Innovation in Action
                         </div>
                     </motion.div>
 
@@ -390,7 +390,7 @@ const ProjectsGrid = ({ selectedCategory, searchQuery, setSelectedProject }) => 
                         animate={{ opacity: 1, scale: 1 }}
                         className="text-center py-20"
                     >
-                        <div className="text-5xl md:text-6xl mb-4">🔍</div>
+                        <div className="text-5xl md:text-6xl mb-4">ðŸ”</div>
                         <h3 className="text-xl md:text-2xl font-bold text-[#003366] mb-2">No projects found</h3>
                         <p className="text-gray-600">Try adjusting your filters or search query</p>
                     </motion.div>
@@ -528,7 +528,7 @@ const FeaturedProjects = ({ setSelectedProject }) => {
                     viewport={{ once: true }}
                     className="text-center mb-12"
                 >
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4">🏆 Featured Innovations</h2>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">ðŸ† Featured Innovations</h2>
                     <p className="text-lg text-gray-300">Our flagship projects pushing the boundaries of technology.</p>
                 </motion.div>
 
@@ -591,7 +591,7 @@ const Interactive3DShowcase = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                 >
-                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">🌐 Interactive 3D Showcase</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">ðŸŒ Interactive 3D Showcase</h2>
                     <p className="text-lg text-gray-600 mb-8">Visualizing the complexity of our most ambitious projects.</p>
                 </motion.div>
                 <Card className="p-8 h-64 md:h-96 flex items-center justify-center bg-gray-200 border-4 border-dashed border-gray-400">
@@ -621,7 +621,7 @@ const TechnologyStack = () => {
                     viewport={{ once: true }}
                     className="text-center mb-12"
                 >
-                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">🛠️ Core Technology Stack</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">ðŸ› ï¸ Core Technology Stack</h2>
                     <p className="text-lg text-gray-600">The tools we use to build future-proof solutions.</p>
                 </motion.div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -664,7 +664,7 @@ const ProjectTimeline = () => {
                     viewport={{ once: true }}
                     className="text-center mb-12"
                 >
-                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">📅 Project History & Milestones</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">ðŸ“… Project History & Milestones</h2>
                     <p className="text-lg text-gray-600">A journey of continuous growth and innovation.</p>
                 </motion.div>
 
@@ -718,7 +718,7 @@ const ClientImpact = () => {
                     viewport={{ once: true }}
                     className="text-center mb-12"
                 >
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4">📈 Client Impact Stories</h2>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">ðŸ“ˆ Client Impact Stories</h2>
                     <p className="text-lg text-gray-300">Success is measured by the change we create.</p>
                 </motion.div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -760,7 +760,7 @@ const ProcessShowcase = () => {
                     viewport={{ once: true }}
                     className="text-center mb-12"
                 >
-                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">⚙️ Our Development Process</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">âš™ï¸ Our Development Process</h2>
                     <p className="text-lg text-gray-600">A structured, iterative approach to guarantee success.</p>
                 </motion.div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -801,7 +801,7 @@ const InnovationLab = () => {
                         viewport={{ once: true }}
                     >
                         <Sparkles size={60} className="text-[#003366] mx-auto mb-4" />
-                        <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">🧪 SL Innovation Lab</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">ðŸ§ª SL Innovation Lab</h2>
                         <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
                             Beyond client work, our dedicated lab explores future technologies like Quantum Computing, advanced AI models, and Decentralized applications.
                         </p>
@@ -832,7 +832,7 @@ const TestimonialsSection = () => {
                     viewport={{ once: true }}
                     className="text-center mb-12"
                 >
-                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">🗣️ What Our Clients Say</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#003366] mb-4">ðŸ—£ï¸ What Our Clients Say</h2>
                     <p className="text-lg text-gray-600">Trust built on proven results.</p>
                 </motion.div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -847,7 +847,7 @@ const TestimonialsSection = () => {
                             <Card className="p-6 md:p-8 border-l-4 border-[#003366] h-full flex flex-col justify-between">
                                 <t.icon size={30} className="text-[#003366] mb-4" />
                                 <blockquote className="text-xl italic text-gray-700 mb-6">"{t.quote}"</blockquote>
-                                <footer className="font-semibold text-gray-800">— {t.client}</footer>
+                                <footer className="font-semibold text-gray-800">â€” {t.client}</footer>
                             </Card>
                         </motion.div>
                     ))}

@@ -1,4 +1,5 @@
-// schema.prisma - Complete Database with Visitor Tracking + Employee System + CMS + Approvals
+// schema.prisma - Complete Database with ALL Features - UPDATED WITH EMPLOYEE PORTAL
+// Visitor Tracking + Employee System + CMS + Approvals + Job Management + Tasks + Payroll + Documents
 
 generator client {
   provider = "prisma-client-js"
@@ -93,86 +94,176 @@ enum TrackingStatus {
 }
 
 enum VisitorType {
-  ANONYMOUS      // Not identified yet
-  IDENTIFIED     // Has provided info (email, name, etc)
-  REGISTERED     // Registered user
-  LEAD           // Potential customer
-  CUSTOMER       // Existing customer
+  ANONYMOUS
+  IDENTIFIED
+  REGISTERED
+  LEAD
+  CUSTOMER
 }
 
 enum VisitorStatus {
-  ACTIVE         // Currently on site
-  IDLE           // Inactive for 5+ minutes
-  LEFT           // Left the site
-  CONVERTED      // Became a lead/customer
+  ACTIVE
+  IDLE
+  LEFT
+  CONVERTED
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  NEW
+  REVIEWING
+  SHORTLISTED
+  INTERVIEW_SCHEDULED
+  INTERVIEWED
+  OFFER_SENT
+  HIRED
+  REJECTED
+  WITHDRAWN
+}
+
+// ==================== NEW ENUMS FOR EMPLOYEE PORTAL ====================
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PayslipStatus {
+  PENDING
+  PROCESSED
+  PAID
+}
+
+enum DocumentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum LeaveType {
+  CASUAL
+  SICK
+  EARNED
+  UNPAID
+  MATERNITY
+  PATERNITY
+  BEREAVEMENT
+  STUDY
+  OTHER
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
 }
 
 // ==================== USER & EMPLOYEE MODELS ====================
 
 model User {
-  id                      String           @id @default(uuid())
-  email                   String           @unique
-  password                String
-  firstName               String
-  lastName                String
-  phone                   String?
-  avatar                  String?
-  role                    Role             @default(EMPLOYEE)
-  status                  EmploymentStatus @default(INACTIVE)
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-  createdBy               String?
-  
+  id        String           @id @default(uuid())
+  email     String           @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  avatar    String?
+  role      Role             @default(EMPLOYEE)
+  status    EmploymentStatus @default(INACTIVE)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  createdBy String?
+
   // Employee Relations
   employee                Employee?
-  employeesHired          Employee[]       @relation("EmployeeHirer")
-  interviewsAsCandidiate  Interview[]      @relation("CandidateInterviews")
-  interviewsAsInterviewer Interview[]      @relation("InterviewerInterviews")
-  
+  employeesHired          Employee[]  @relation("EmployeeHirer")
+  interviewsAsCandidiate  Interview[] @relation("CandidateInterviews")
+  interviewsAsInterviewer Interview[] @relation("InterviewerInterviews")
+
   // CMS Relations
-  content                 Content[]        @relation("ContentAuthor")
-  media                   Media[]          @relation("MediaUploader")
-  comments                Comment[]        @relation("CommentAuthor")
-  contentLikes            ContentLike[]
-  
+  content      Content[]     @relation("ContentAuthor")
+  media        Media[]       @relation("MediaUploader")
+  comments     Comment[]     @relation("CommentAuthor")
+  contentLikes ContentLike[]
+
   // Approval Relations
-  submittedApprovals      Approval[]       @relation("ApprovalSubmitter")
-  approvedApprovals       Approval[]       @relation("ApprovalApprover")
-  approvalComments        ApprovalComment[]
-  approvalHistory         ApprovalHistory[]
+  submittedApprovals Approval[]        @relation("ApprovalSubmitter")
+  approvedApprovals  Approval[]        @relation("ApprovalApprover")
+  approvalComments   ApprovalComment[]
+  approvalHistory    ApprovalHistory[]
 
   // Employee Tracking Relations
-  employeeTracking        EmployeeTracking[]
-  workSessions            WorkSession[]
-  submittedActivityLogs   AdminActivityLog[] @relation("ActivitySubmitter")
-  
+  employeeTracking      EmployeeTracking[]
+  workSessions          WorkSession[]
+  submittedActivityLogs AdminActivityLog[] @relation("ActivitySubmitter")
+
+  // Job Management Relations
+  createdJobs          Job[]            @relation("JobCreator")
+  reviewedApplications JobApplication[] @relation("ApplicationReviewer")
+
+  // Task Relations
+  assignedTasks Task[]        @relation("TaskAssignee")
+  createdTasks  Task[]        @relation("TaskCreator")
+  taskComments  TaskComment[]
+
+  // Document Relations
+  verifiedDocuments EmployeeDocument[] @relation("DocumentVerifier")
+
   @@map("users")
 }
 
 model Employee {
-  id          String               @id @default(uuid())
-  userId      String               @unique
-  employeeId  String               @unique
-  department  String
-  position    String
-  location    String?
-  joinDate    DateTime
-  status      EmploymentStatus     @default(ACTIVE)
-  salary      Float?
-  hiredById   String?
-  hiredAt     DateTime?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  
+  id         String           @id @default(uuid())
+  userId     String           @unique
+  employeeId String           @unique
+  department String
+  position   String
+  location   String?
+  joinDate   DateTime
+  status     EmploymentStatus @default(ACTIVE)
+  salary     Float?
+  hiredById  String?
+  hiredAt    DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
   // Performance metrics
   performanceRating Float?
   attendanceRate    Float?
   totalHoursMonth   Float?
-  
+
+  // Bank Details (for payroll)
+  bankName      String?
+  bankAccount   String?
+  ifscCode      String?
+  panNumber     String?
+  pfNumber      String?
+  esiNumber     String?
+
   // Relations
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   hiredBy     User?                @relation("EmployeeHirer", fields: [hiredById], references: [id])
   termination EmployeeTermination?
+  payslips    Payslip[]
+  documents   EmployeeDocument[]
+  leaveBalances LeaveBalance[]
+  leaveRequests LeaveRequest[]
 
   @@map("employees")
 }
@@ -185,9 +276,9 @@ model EmployeeTermination {
   terminatedBy String?
   notes        String?
   createdAt    DateTime @default(now())
-  
+
   // Relations
-  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("employee_terminations")
 }
@@ -206,38 +297,363 @@ model Interview {
   approvedAt    DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  
+
   // Relations
-  candidate     User            @relation("CandidateInterviews", fields: [candidateId], references: [id], onDelete: Cascade)
-  interviewer   User?           @relation("InterviewerInterviews", fields: [interviewerId], references: [id])
+  candidate   User  @relation("CandidateInterviews", fields: [candidateId], references: [id], onDelete: Cascade)
+  interviewer User? @relation("InterviewerInterviews", fields: [interviewerId], references: [id])
 
   @@map("interviews")
+}
+
+// ==================== TASK MANAGEMENT SYSTEM ====================
+
+model Task {
+  id          String       @id @default(uuid())
+  taskId      String       @unique @default(cuid())
+  title       String
+  description String       @db.Text
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  progress    Int          @default(0) // 0-100
+  
+  // Assignment
+  assignedToId String
+  assignedTo   User   @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: Cascade)
+  createdById  String
+  createdBy    User   @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  
+  // Category & Organization
+  category     String?
+  department   String?
+  projectId    String?
+  
+  // Dates
+  startDate    DateTime?
+  dueDate      DateTime
+  completedAt  DateTime?
+  
+  // Attachments (stored as JSON array of file URLs)
+  attachments  String[]
+  
+  // Metadata
+  estimatedHours Float?
+  actualHours    Float?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  comments TaskComment[]
+  history  TaskHistory[]
+
+  @@index([assignedToId])
+  @@index([createdById])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@map("tasks")
+}
+
+model TaskComment {
+  id     String @id @default(uuid())
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+  @@index([userId])
+  @@map("task_comments")
+}
+
+model TaskHistory {
+  id     String @id @default(uuid())
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  action    String // CREATED, PROGRESS_UPDATED, STATUS_CHANGED, COMPLETED, etc.
+  oldValue  String?
+  newValue  String?
+  changedBy String
+  
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([createdAt])
+  @@map("task_history")
+}
+
+// ==================== PAYROLL SYSTEM ====================
+
+model Payslip {
+  id         String @id @default(uuid())
+  payslipId  String @unique @default(cuid())
+  
+  // Employee Reference
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Period
+  month      String   // "January", "February", etc.
+  year       String   // "2024", "2025", etc.
+  payPeriodStart DateTime
+  payPeriodEnd   DateTime
+  
+  // Earnings
+  basicSalary        Float
+  hra                Float   @default(0) // House Rent Allowance
+  specialAllowance   Float   @default(0)
+  transportAllowance Float   @default(0)
+  medicalAllowance   Float   @default(0)
+  lta                Float   @default(0) // Leave Travel Allowance
+  bonus              Float   @default(0)
+  overtime           Float   @default(0)
+  otherAllowances    Float   @default(0)
+  grossSalary        Float
+  
+  // Deductions
+  pf                 Float   @default(0) // Provident Fund
+  esi                Float   @default(0) // Employee State Insurance
+  professionalTax    Float   @default(0)
+  tds                Float   @default(0) // Tax Deducted at Source
+  loanDeduction      Float   @default(0)
+  advanceDeduction   Float   @default(0)
+  otherDeductions    Float   @default(0)
+  totalDeductions    Float
+  
+  // Net
+  netSalary          Float
+  
+  // Working Days
+  totalWorkingDays   Int
+  daysPresent        Int
+  daysAbsent         Int
+  leaveDays          Int     @default(0)
+  
+  // Status & Payment
+  status             PayslipStatus @default(PENDING)
+  paidOn             DateTime?
+  paymentMode        String?       // Bank Transfer, Cheque, Cash
+  transactionId      String?
+  
+  // Generated Info
+  generatedById      String?
+  generatedAt        DateTime      @default(now())
+  
+  // Notes
+  notes              String?       @db.Text
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, month, year])
+  @@index([employeeId])
+  @@index([month, year])
+  @@index([status])
+  @@map("payslips")
+}
+
+model TaxDocument {
+  id            String @id @default(uuid())
+  
+  // Employee Reference
+  employeeId    String
+  
+  // Document Info
+  type          String    // Form 16, Form 16A, Form 12BA, etc.
+  financialYear String    // "2023-24", "2024-25"
+  
+  // File
+  fileUrl       String?
+  
+  // Status
+  status        String    @default("PENDING") // PENDING, GENERATED, AVAILABLE
+  generatedOn   DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, type, financialYear])
+  @@index([employeeId])
+  @@index([financialYear])
+  @@map("tax_documents")
+}
+
+// ==================== EMPLOYEE DOCUMENTS ====================
+
+model EmployeeDocument {
+  id         String @id @default(uuid())
+  documentId String @unique @default(cuid())
+  
+  // Employee Reference
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Document Info
+  name           String
+  category       String   // Identity, Personal, Educational, Employment, Financial
+  documentType   String   // Aadhar, PAN, Passport, Degree, etc.
+  documentNumber String?
+  
+  // File Info
+  fileUrl        String
+  fileType       String   // PDF, JPG, PNG, etc.
+  fileSize       String
+  
+  // Verification
+  status         DocumentStatus @default(PENDING)
+  required       Boolean        @default(false)
+  
+  // Verification Info
+  verifiedOn     DateTime?
+  verifiedById   String?
+  verifiedBy     User?          @relation("DocumentVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  rejectionReason String?
+  
+  // Dates
+  expiryDate     DateTime?
+  uploadedOn     DateTime       @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  history DocumentHistory[]
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([category])
+  @@map("employee_documents")
+}
+
+model DocumentHistory {
+  id         String           @id @default(uuid())
+  documentId String
+  document   EmployeeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  action    String // UPLOADED, VERIFIED, REJECTED, REPLACED, REVERIFICATION_REQUESTED
+  changedBy String
+  notes     String?
+  
+  createdAt DateTime @default(now())
+
+  @@index([documentId])
+  @@index([createdAt])
+  @@map("document_history")
+}
+
+// ==================== LEAVE MANAGEMENT ====================
+
+model LeaveBalance {
+  id         String @id @default(uuid())
+  
+  // Employee Reference
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Year
+  year       String  // "2024", "2025"
+  
+  // Leave Balances by Type
+  casualTotal    Int @default(12)
+  casualUsed     Int @default(0)
+  casualBalance  Int @default(12)
+  
+  sickTotal      Int @default(10)
+  sickUsed       Int @default(0)
+  sickBalance    Int @default(10)
+  
+  earnedTotal    Int @default(15)
+  earnedUsed     Int @default(0)
+  earnedBalance  Int @default(15)
+  
+  unpaidUsed     Int @default(0) // Unlimited
+  
+  // Other Leave Types
+  maternityTotal   Int @default(0)
+  maternityUsed    Int @default(0)
+  paternityTotal   Int @default(0)
+  paternityUsed    Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, year])
+  @@index([employeeId])
+  @@index([year])
+  @@map("leave_balances")
+}
+
+model LeaveRequest {
+  id          String @id @default(uuid())
+  leaveId     String @unique @default(cuid())
+  
+  // Employee Reference
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Leave Details
+  leaveType   LeaveType
+  startDate   DateTime
+  endDate     DateTime
+  days        Float       // Can be 0.5 for half days
+  
+  // Reason & Contact
+  reason      String      @db.Text
+  contactNumber String?
+  emergencyAddress String?
+  
+  // Status
+  status      LeaveStatus @default(PENDING)
+  
+  // Approval Info
+  approvedById String?
+  approvedByName String?
+  approvedOn   DateTime?
+  rejectionReason String?
+  
+  // Metadata
+  appliedOn   DateTime    @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([leaveType])
+  @@index([startDate, endDate])
+  @@map("leave_requests")
 }
 
 // ==================== EMPLOYEE TRACKING SYSTEM ====================
 
 model EmployeeTracking {
-  id                String         @id @default(cuid())
-  userId            String
-  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  employeeId        String
-  email             String
-  department        String
-  position          String?
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  employeeId String
+  email      String
+  department String
+  position   String?
+
   loginTime         DateTime       @default(now())
   logoutTime        DateTime?
   status            TrackingStatus @default(ONLINE)
   workDurationHours Float?
-  
+
   // Device & Location info
-  ipAddress         String?
-  deviceInfo        String?
-  location          String?
-  
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  ipAddress  String?
+  deviceInfo String?
+  location   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([employeeId])
@@ -248,26 +664,26 @@ model EmployeeTracking {
 }
 
 model WorkSession {
-  id               String   @id @default(cuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  employeeId       String
-  email            String
-  department       String
-  
-  loginTime        DateTime
-  logoutTime       DateTime
-  durationHours    Float
-  date             DateTime
-  
-  breakDuration    Float?   @default(0)
-  tasksCompleted   Int?
-  productivity     Float?   // percentage
-  notes            String?
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  employeeId String
+  email      String
+  department String
+
+  loginTime     DateTime
+  logoutTime    DateTime
+  durationHours Float
+  date          DateTime
+
+  breakDuration  Float?  @default(0)
+  tasksCompleted Int?
+  productivity   Float?
+  notes          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([employeeId])
@@ -277,25 +693,25 @@ model WorkSession {
 }
 
 model AdminActivityLog {
-  id             String   @id @default(cuid())
-  action         String   // EMPLOYEE_LOGIN, EMPLOYEE_LOGOUT, VIEW_REPORTS, EXPORT_DATA, etc
-  
-  submitterId    String
-  submitter      User     @relation("ActivitySubmitter", fields: [submitterId], references: [id], onDelete: Cascade)
-  
-  employeeId     String?
-  email          String?
-  department     String?
-  
-  details        String   @db.Text
-  timestamp      DateTime @default(now())
-  status         String   @default("SUCCESS") // SUCCESS, FAILED, PENDING
-  errorMessage   String?
-  
-  ipAddress      String?
-  userAgent      String?
-  
-  createdAt      DateTime @default(now())
+  id     String @id @default(cuid())
+  action String
+
+  submitterId String
+  submitter   User   @relation("ActivitySubmitter", fields: [submitterId], references: [id], onDelete: Cascade)
+
+  employeeId String?
+  email      String?
+  department String?
+
+  details      String   @db.Text
+  timestamp    DateTime @default(now())
+  status       String   @default("SUCCESS")
+  errorMessage String?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
 
   @@index([action])
   @@index([submitterId])
@@ -305,21 +721,21 @@ model AdminActivityLog {
 }
 
 model AttendanceReport {
-  id               String   @id @default(cuid())
-  employeeId       String
-  email            String
-  department       String
-  
-  date             DateTime
-  presentDays      Int
-  absentDays       Int
-  totalHours       Float
-  attendanceRate   Float
-  
-  monthYear        String   // "2025-11" for November 2025
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id         String @id @default(cuid())
+  employeeId String
+  email      String
+  department String
+
+  date           DateTime
+  presentDays    Int
+  absentDays     Int
+  totalHours     Float
+  attendanceRate Float
+
+  monthYear String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([employeeId, date])
   @@index([employeeId])
@@ -329,17 +745,17 @@ model AttendanceReport {
 }
 
 model DepartmentStats {
-  id               String   @id @default(cuid())
-  department       String   @unique
+  id               String @id @default(cuid())
+  department       String @unique
   totalEmployees   Int
   averageHours     Float
   onlineNow        Int
   performanceScore Float?
-  
-  date             DateTime @default(now())
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+
+  date DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([date])
   @@index([department])
@@ -349,67 +765,59 @@ model DepartmentStats {
 // ==================== VISITOR TRACKING SYSTEM ====================
 
 model Visitor {
-  id                String        @id @default(uuid())
-  visitorId         String        @unique // Unique identifier (cookie/fingerprint)
-  
-  // Identity Information
-  type              VisitorType   @default(ANONYMOUS)
-  status            VisitorStatus @default(ACTIVE)
-  email             String?
-  name              String?
-  phone             String?
-  company           String?
-  position          String?
-  
-  // Device & Location
-  ipAddress         String
-  country           String?
-  city              String?
-  region            String?
-  timezone          String?
-  language          String?
-  
-  // Device Information
-  device            String?       // Desktop, Mobile, Tablet
-  os                String?       // Windows, Mac, Linux, iOS, Android
-  browser           String?       // Chrome, Firefox, Safari, Edge
-  browserVersion    String?
-  screenResolution  String?
-  userAgent         String        @db.Text
-  
-  // Tracking Data
-  firstVisit        DateTime      @default(now())
-  lastVisit         DateTime      @default(now())
-  totalVisits       Int           @default(1)
-  totalPageViews    Int           @default(0)
-  totalTimeSpent    Int           @default(0) // in seconds
-  
-  // Marketing
-  referrer          String?       @db.Text
-  utmSource         String?
-  utmMedium         String?
-  utmCampaign       String?
-  utmTerm           String?
-  utmContent        String?
-  
-  // Engagement
-  pagesVisited      String[]      // Array of page URLs
-  actionsPerformed  String[]      // Array of actions (click, scroll, etc)
-  interests         String[]      // Based on pages visited
-  
-  // Lead Scoring
-  leadScore         Int           @default(0)
-  isQualified       Boolean       @default(false)
-  
-  // Relations
-  sessions          VisitorSession[]
-  pageViews         PageView[]
-  events            VisitorEvent[]
-  forms             FormSubmission[]
-  
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
+  id        String @id @default(uuid())
+  visitorId String @unique
+
+  type     VisitorType   @default(ANONYMOUS)
+  status   VisitorStatus @default(ACTIVE)
+  email    String?
+  name     String?
+  phone    String?
+  company  String?
+  position String?
+
+  ipAddress String
+  country   String?
+  city      String?
+  region    String?
+  timezone  String?
+  language  String?
+
+  device           String?
+  os               String?
+  browser          String?
+  browserVersion   String?
+  screenResolution String?
+  userAgent        String  @db.Text
+
+  firstVisit     DateTime @default(now())
+  lastVisit      DateTime @default(now())
+  totalVisits    Int      @default(1)
+  totalPageViews Int      @default(0)
+  totalTimeSpent Int      @default(0)
+
+  referrer    String? @db.Text
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+
+  pagesVisited     String[]
+  actionsPerformed String[]
+  interests        String[]
+
+  leadScore   Int     @default(0)
+  isQualified Boolean @default(false)
+
+  sessions  VisitorSession[]
+  pageViews PageView[]
+  events    VisitorEvent[]
+  forms     FormSubmission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([visitorId])
   @@index([email])
   @@index([ipAddress])
@@ -421,36 +829,32 @@ model Visitor {
 }
 
 model VisitorSession {
-  id                String        @id @default(uuid())
-  visitorId         String
-  visitor           Visitor       @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  
-  sessionId         String        @unique
-  
-  // Session Details
-  startTime         DateTime      @default(now())
-  endTime           DateTime?
-  duration          Int?          // in seconds
-  isActive          Boolean       @default(true)
-  
-  // Entry & Exit
-  entryPage         String
-  exitPage          String?
-  
-  // Device Info (can change between sessions)
-  ipAddress         String
-  device            String?
-  browser           String?
-  os                String?
-  
-  // Session Metrics
-  pageViews         Int           @default(0)
-  events            Int           @default(0)
-  scrollDepth       Float?        // percentage
-  
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
+  id        String  @id @default(uuid())
+  visitorId String
+  visitor   Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  sessionId String @unique
+
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+  duration  Int?
+  isActive  Boolean   @default(true)
+
+  entryPage String
+  exitPage  String?
+
+  ipAddress String
+  device    String?
+  browser   String?
+  os        String?
+
+  pageViews   Int    @default(0)
+  events      Int    @default(0)
+  scrollDepth Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([visitorId])
   @@index([sessionId])
   @@index([isActive])
@@ -459,27 +863,24 @@ model VisitorSession {
 }
 
 model PageView {
-  id                String        @id @default(uuid())
-  visitorId         String
-  visitor           Visitor       @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  
-  // Page Details
-  url               String        @db.Text
-  title             String?
-  path              String
-  referrer          String?       @db.Text
-  
-  // Timing
-  timestamp         DateTime      @default(now())
-  timeOnPage        Int?          // seconds
-  scrollDepth       Float?        // percentage
-  
-  // Interactions
-  clicks            Int           @default(0)
-  formInteractions  Int           @default(0)
-  
-  createdAt         DateTime      @default(now())
-  
+  id        String  @id @default(uuid())
+  visitorId String
+  visitor   Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  url      String  @db.Text
+  title    String?
+  path     String
+  referrer String? @db.Text
+
+  timestamp   DateTime @default(now())
+  timeOnPage  Int?
+  scrollDepth Float?
+
+  clicks           Int @default(0)
+  formInteractions Int @default(0)
+
+  createdAt DateTime @default(now())
+
   @@index([visitorId])
   @@index([url])
   @@index([path])
@@ -488,22 +889,20 @@ model PageView {
 }
 
 model VisitorEvent {
-  id                String        @id @default(uuid())
-  visitorId         String
-  visitor           Visitor       @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  
-  // Event Details
-  eventType         String        // click, scroll, hover, download, video_play, etc
-  eventCategory     String?       // button, link, form, video, etc
-  eventLabel        String?       // Specific element identifier
-  eventValue        String?       @db.Text
-  
-  // Context
-  page              String
-  element           String?       // CSS selector or element description
-  
-  timestamp         DateTime      @default(now())
-  
+  id        String  @id @default(uuid())
+  visitorId String
+  visitor   Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  eventType     String
+  eventCategory String?
+  eventLabel    String?
+  eventValue    String? @db.Text
+
+  page    String
+  element String?
+
+  timestamp DateTime @default(now())
+
   @@index([visitorId])
   @@index([eventType])
   @@index([timestamp])
@@ -511,31 +910,28 @@ model VisitorEvent {
 }
 
 model FormSubmission {
-  id                String        @id @default(uuid())
-  visitorId         String
-  visitor           Visitor       @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  
-  // Form Details
-  formType          String        // contact, newsletter, quote, demo, etc
-  formName          String?
-  page              String
-  
-  // Submitted Data
-  email             String?
-  name              String?
-  phone             String?
-  company           String?
-  message           String?       @db.Text
-  customFields      Json?         // Additional fields
-  
-  // Status
-  isProcessed       Boolean       @default(false)
-  isSpam            Boolean       @default(false)
-  respondedAt       DateTime?
-  
-  submittedAt       DateTime      @default(now())
-  createdAt         DateTime      @default(now())
-  
+  id        String  @id @default(uuid())
+  visitorId String
+  visitor   Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  formType String
+  formName String?
+  page     String
+
+  email        String?
+  name         String?
+  phone        String?
+  company      String?
+  message      String? @db.Text
+  customFields Json?
+
+  isProcessed Boolean   @default(false)
+  isSpam      Boolean   @default(false)
+  respondedAt DateTime?
+
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
   @@index([visitorId])
   @@index([formType])
   @@index([email])
@@ -544,34 +940,30 @@ model FormSubmission {
 }
 
 model LiveVisitor {
-  id                String        @id @default(uuid())
-  visitorId         String        @unique
-  
-  // Current Activity
-  currentPage       String
-  pageTitle         String?
-  isActive          Boolean       @default(true)
-  
-  // Visitor Info
-  email             String?
-  name              String?
-  ipAddress         String
-  country           String?
-  city              String?
-  device            String?
-  browser           String?
-  
-  // Timing
-  lastActivityAt    DateTime      @default(now())
-  sessionStart      DateTime      @default(now())
-  timeOnSite        Int           @default(0) // seconds
-  
-  // Metrics
-  pageViews         Int           @default(0)
-  
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
+  id        String @id @default(uuid())
+  visitorId String @unique
+
+  currentPage String
+  pageTitle   String?
+  isActive    Boolean @default(true)
+
+  email     String?
+  name      String?
+  ipAddress String
+  country   String?
+  city      String?
+  device    String?
+  browser   String?
+
+  lastActivityAt DateTime @default(now())
+  sessionStart   DateTime @default(now())
+  timeOnSite     Int      @default(0)
+
+  pageViews Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([visitorId])
   @@index([isActive])
   @@index([lastActivityAt])
@@ -579,79 +971,229 @@ model LiveVisitor {
 }
 
 model VisitorAnalytics {
-  id                String        @id @default(uuid())
-  date              DateTime      @unique @default(now())
-  
-  // Daily Metrics
-  totalVisitors     Int           @default(0)
-  newVisitors       Int           @default(0)
-  returningVisitors Int           @default(0)
-  
-  totalPageViews    Int           @default(0)
-  avgTimeOnSite     Float         @default(0)
-  bounceRate        Float         @default(0)
-  
-  // Conversions
-  formSubmissions   Int           @default(0)
-  leadsGenerated    Int           @default(0)
-  
-  // Top Pages
-  topPages          Json?
-  topReferrers      Json?
-  topCountries      Json?
-  topDevices        Json?
-  
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
+  id   String   @id @default(uuid())
+  date DateTime @unique @default(now())
+
+  totalVisitors     Int @default(0)
+  newVisitors       Int @default(0)
+  returningVisitors Int @default(0)
+
+  totalPageViews Int   @default(0)
+  avgTimeOnSite  Float @default(0)
+  bounceRate     Float @default(0)
+
+  formSubmissions Int @default(0)
+  leadsGenerated  Int @default(0)
+
+  topPages     Json?
+  topReferrers Json?
+  topCountries Json?
+  topDevices   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([date])
   @@map("visitor_analytics")
+}
+
+// ==================== JOB MANAGEMENT SYSTEM ====================
+
+model Job {
+  id    String @id @default(uuid())
+  jobId String @unique @default(cuid())
+
+  title           String
+  department      String
+  location        String
+  employmentType  String
+  experienceLevel String
+
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryCurrency String @default("GBP")
+
+  description      String   @db.Text
+  responsibilities String[]
+  requirements     String[]
+  benefits         String[]
+  skills           String[]
+
+  status      JobStatus @default(DRAFT)
+  isPublished Boolean   @default(false)
+
+  applicationDeadline DateTime
+  publishedAt         DateTime?
+  closedAt            DateTime?
+
+  viewsCount        Int @default(0)
+  applicationsCount Int @default(0)
+
+  completionPercentage Int      @default(0)
+  missingFields        String[] @default([])
+
+  metaTitle       String?
+  metaDescription String?
+  slug            String? @unique
+
+  createdById String
+  createdBy   User   @relation("JobCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  applications JobApplication[]
+  jobViews     JobView[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([department])
+  @@index([isPublished])
+  @@index([applicationDeadline])
+  @@index([createdById])
+  @@index([slug])
+  @@map("jobs")
+}
+
+model JobApplication {
+  id            String @id @default(uuid())
+  applicationId String @unique @default(cuid())
+
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  candidateName String
+  email         String
+  phone         String
+  location      String?
+
+  coverLetter  String? @db.Text
+  resumeUrl    String?
+  portfolioUrl String?
+  linkedinUrl  String?
+  githubUrl    String?
+  websiteUrl   String?
+
+  status ApplicationStatus @default(NEW)
+
+  yearsExperience Int?
+  currentCompany  String?
+  currentTitle    String?
+  expectedSalary  String?
+  noticePeriod    String?
+  availability    String?
+
+  questionsAnswers Json?
+
+  internalNotes  String?  @db.Text
+  interviewNotes String?  @db.Text
+  rating         Int?
+  tags           String[]
+
+  appliedAt     DateTime  @default(now())
+  reviewedAt    DateTime?
+  interviewedAt DateTime?
+  hiredAt       DateTime?
+  rejectedAt    DateTime?
+
+  source    String?
+  ipAddress String?
+  userAgent String?
+
+  reviewedById String?
+  reviewedBy   User?   @relation("ApplicationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobId])
+  @@index([status])
+  @@index([email])
+  @@index([appliedAt])
+  @@index([applicationId])
+  @@map("job_applications")
+}
+
+model JobView {
+  id    String @id @default(uuid())
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  visitorId String?
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+  country   String?
+  city      String?
+  device    String?
+
+  viewedAt DateTime @default(now())
+
+  @@index([jobId])
+  @@index([viewedAt])
+  @@index([visitorId])
+  @@map("job_views")
+}
+
+model JobAnalytics {
+  id   String   @id @default(uuid())
+  date DateTime @unique
+
+  totalViews     Int @default(0)
+  uniqueVisitors Int @default(0)
+  applications   Int @default(0)
+
+  topJobs         Json?
+  topReferrers    Json?
+  topLocations    Json?
+  deviceBreakdown Json?
+
+  viewToApplyRate Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@map("job_analytics")
 }
 
 // ==================== APPROVAL SYSTEM ====================
 
 model Approval {
-  id              String           @id @default(uuid())
-  approvalId      String           @unique
-  type            ApprovalType
-  title           String
-  description     String?          @db.Text
-  amount          String?
-  status          ApprovalStatus   @default(PENDING)
-  priority        ApprovalPriority @default(MEDIUM)
-  
-  // Submitter info
+  id          String           @id @default(uuid())
+  approvalId  String           @unique
+  type        ApprovalType
+  title       String
+  description String?          @db.Text
+  amount      String?
+  status      ApprovalStatus   @default(PENDING)
+  priority    ApprovalPriority @default(MEDIUM)
+
   submitterId     String
-  submitter       User             @relation("ApprovalSubmitter", fields: [submitterId], references: [id], onDelete: Cascade)
+  submitter       User    @relation("ApprovalSubmitter", fields: [submitterId], references: [id], onDelete: Cascade)
   submitterName   String
   submitterEmail  String
   submitterAvatar String?
-  
-  // Approver info
-  approverId      String?
-  approver        User?            @relation("ApprovalApprover", fields: [approverId], references: [id], onDelete: SetNull)
-  approverName    String?
-  approverEmail   String?
-  approverAvatar  String?
-  
-  // Additional fields
-  notes           String?          @db.Text
-  metadata        Json?            // Store additional structured data
-  attachments     String[]         // Array of file URLs
-  
-  // Dates
-  submittedDate   DateTime         @default(now())
-  approvedDate    DateTime?
-  dueDate         DateTime?
-  
-  // Timestamps
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
-  // Relations
-  comments        ApprovalComment[]
-  history         ApprovalHistory[]
-  
+
+  approverId     String?
+  approver       User?   @relation("ApprovalApprover", fields: [approverId], references: [id], onDelete: SetNull)
+  approverName   String?
+  approverEmail  String?
+  approverAvatar String?
+
+  notes       String?  @db.Text
+  metadata    Json?
+  attachments String[]
+
+  submittedDate DateTime  @default(now())
+  approvedDate  DateTime?
+  dueDate       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments ApprovalComment[]
+  history  ApprovalHistory[]
+
   @@index([submitterId])
   @@index([approverId])
   @@index([status])
@@ -666,16 +1208,16 @@ model ApprovalComment {
   id         String   @id @default(uuid())
   approvalId String
   approval   Approval @relation(fields: [approvalId], references: [id], onDelete: Cascade)
-  
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  comment    String   @db.Text
-  isInternal Boolean  @default(false) // Internal comments visible only to admins
-  
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comment    String  @db.Text
+  isInternal Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([approvalId])
   @@index([userId])
   @@map("approval_comments")
@@ -685,17 +1227,17 @@ model ApprovalHistory {
   id         String   @id @default(uuid())
   approvalId String
   approval   Approval @relation(fields: [approvalId], references: [id], onDelete: Cascade)
-  
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  action     String   // CREATED, UPDATED, APPROVED, REJECTED, COMMENTED, etc.
-  oldValue   String?  @db.Text
-  newValue   String?  @db.Text
-  changes    Json?    // Structured change data
-  
-  createdAt  DateTime @default(now())
-  
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action   String
+  oldValue String? @db.Text
+  newValue String? @db.Text
+  changes  Json?
+
+  createdAt DateTime @default(now())
+
   @@index([approvalId])
   @@index([userId])
   @@index([action])
@@ -706,50 +1248,44 @@ model ApprovalHistory {
 // ==================== CONTENT MANAGEMENT SYSTEM ====================
 
 model Content {
-  id              String        @id @default(uuid())
-  title           String
-  slug            String        @unique
-  excerpt         String?       @db.Text
-  content         String        @db.Text
-  type            ContentType   @default(BLOG)
-  status          ContentStatus @default(DRAFT)
-  featured        Boolean       @default(false)
-  featuredImage   String?
-  
-  // Category relation
-  categoryId      String?
-  category        Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  
-  // Publishing
-  publishedAt     DateTime?
-  scheduledAt     DateTime?
-  
-  // SEO
+  id            String        @id @default(uuid())
+  title         String
+  slug          String        @unique
+  excerpt       String?       @db.Text
+  content       String        @db.Text
+  type          ContentType   @default(BLOG)
+  status        ContentStatus @default(DRAFT)
+  featured      Boolean       @default(false)
+  featuredImage String?
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  publishedAt DateTime?
+  scheduledAt DateTime?
+
   metaTitle       String?
   metaDescription String?
   metaKeywords    String?
-  
-  // Analytics
-  views           Int           @default(0)
-  readTime        Int?          // in minutes
-  likes           Int           @default(0)
-  comments        Int           @default(0)
-  shares          Int           @default(0)
-  
-  // Author
-  authorId        String
-  author          User          @relation("ContentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  
-  // Relations
-  tags            Tag[]         @relation("ContentTags")
-  commentsList    Comment[]
-  media           Media[]       @relation("ContentMedia")
-  contentLikes    ContentLike[]
-  contentShares   ContentShare[]
-  
+
+  views    Int  @default(0)
+  readTime Int?
+  likes    Int  @default(0)
+  comments Int  @default(0)
+  shares   Int  @default(0)
+
+  authorId String
+  author   User   @relation("ContentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tags          Tag[]          @relation("ContentTags")
+  commentsList  Comment[]
+  media         Media[]        @relation("ContentMedia")
+  contentLikes  ContentLike[]
+  contentShares ContentShare[]
+
   @@index([slug])
   @@index([type])
   @@index([status])
@@ -760,55 +1296,52 @@ model Content {
 }
 
 model Category {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  slug        String    @unique
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
   description String?
   icon        String?
   color       String?
-  order       Int       @default(0)
+  order       Int     @default(0)
   parent      String?
-  active      Boolean   @default(true)
-  
-  content     Content[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  active      Boolean @default(true)
+
+  content Content[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([slug])
   @@index([active])
   @@map("categories")
 }
 
 model Media {
-  id            String    @id @default(uuid())
-  title         String
-  description   String?
-  type          MediaType
-  url           String
-  thumbnailUrl  String?
-  size          String?
-  duration      String?
-  dimensions    String?
-  folder        String    @default("root")
-  public        Boolean   @default(false)
-  
-  // Analytics
-  views         Int       @default(0)
-  downloads     Int       @default(0)
-  
-  // Upload info
-  uploadedById  String
-  uploadedBy    User      @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  // Relations
-  tags          Tag[]     @relation("MediaTags")
-  contentId     String?
-  content       Content?  @relation("ContentMedia", fields: [contentId], references: [id], onDelete: SetNull)
-  
+  id           String    @id @default(uuid())
+  title        String
+  description  String?
+  type         MediaType
+  url          String
+  thumbnailUrl String?
+  size         String?
+  duration     String?
+  dimensions   String?
+  folder       String    @default("root")
+  public       Boolean   @default(false)
+
+  views     Int @default(0)
+  downloads Int @default(0)
+
+  uploadedById String
+  uploadedBy   User   @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tags      Tag[]    @relation("MediaTags")
+  contentId String?
+  content   Content? @relation("ContentMedia", fields: [contentId], references: [id], onDelete: SetNull)
+
   @@index([type])
   @@index([uploadedById])
   @@index([folder])
@@ -816,37 +1349,36 @@ model Media {
 }
 
 model Tag {
-  id        String    @id @default(uuid())
-  name      String    @unique
-  slug      String    @unique
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
   color     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  
-  // Relations
-  content   Content[] @relation("ContentTags")
-  media     Media[]   @relation("MediaTags")
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content Content[] @relation("ContentTags")
+  media   Media[]   @relation("MediaTags")
+
   @@index([slug])
   @@map("tags")
 }
 
 model Comment {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   contentId String
-  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  
-  authorId  String
-  author    User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  
-  text      String   @db.Text
-  approved  Boolean  @default(false)
-  
-  parentId  String?
-  
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  text     String  @db.Text
+  approved Boolean @default(false)
+
+  parentId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([contentId])
   @@index([authorId])
   @@index([approved])
@@ -854,15 +1386,15 @@ model Comment {
 }
 
 model ContentLike {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   contentId String
-  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
-  
+
   @@unique([contentId, userId])
   @@index([contentId])
   @@index([userId])
@@ -870,16 +1402,16 @@ model ContentLike {
 }
 
 model ContentShare {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   contentId String
-  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  
-  platform  String   // facebook, twitter, linkedin, email, etc.
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  platform  String
   ipAddress String?
   userAgent String?
-  
+
   createdAt DateTime @default(now())
-  
+
   @@index([contentId])
   @@index([platform])
   @@map("content_shares")
@@ -924,7 +1456,7 @@ model AuditLog {
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
-  
+
   @@index([userId])
   @@index([entity])
   @@index([createdAt])

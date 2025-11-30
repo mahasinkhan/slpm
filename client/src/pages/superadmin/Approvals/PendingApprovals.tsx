@@ -68,7 +68,7 @@ const ApprovalAdminDashboard = () => {
         avatar: 'https://i.pravatar.cc/150?img=1',
         department: 'Sales',
       },
-      amount: '£2,450.00',
+      amount: 'Â£2,450.00',
       status: 'PENDING',
       priority: 'HIGH',
       submittedDate: '2025-11-10',
@@ -108,7 +108,7 @@ const ApprovalAdminDashboard = () => {
         avatar: 'https://i.pravatar.cc/150?img=7',
         department: 'Operations',
       },
-      amount: '£8,500.00',
+      amount: 'Â£8,500.00',
       status: 'APPROVED',
       priority: 'HIGH',
       submittedDate: '2025-11-08',
@@ -128,7 +128,7 @@ const ApprovalAdminDashboard = () => {
         avatar: 'https://i.pravatar.cc/150?img=9',
         department: 'Marketing',
       },
-      amount: '£25,000.00',
+      amount: 'Â£25,000.00',
       status: 'REJECTED',
       priority: 'URGENT',
       submittedDate: '2025-11-07',
@@ -650,7 +650,7 @@ const ApprovalAdminDashboard = () => {
                   onClick={() => setShowDetailModal(false)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  ✕
+                  âœ•
                 </button>
               </div>
 
@@ -942,7 +942,7 @@ const ApprovalAdminDashboard = () => {
                 />
               </label>
               <label className="block">
-                <span className="text-gray-700">Amount (e.g., £500.00)</span>
+                <span className="text-gray-700">Amount (e.g., Â£500.00)</span>
                 <input
                   type="text"
                   value={newApprovalForm.amount}

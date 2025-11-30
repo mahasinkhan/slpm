@@ -498,7 +498,7 @@ const APIMonitor = () => {
                       {error.statusCode}
                     </span>
                     <span className="px-2 py-1 rounded bg-gray-200 text-gray-700 text-xs font-bold">
-                      ×{error.count}
+                      Ã—{error.count}
                     </span>
                   </div>
                   <span className="text-xs text-red-600">{error.timestamp}</span>

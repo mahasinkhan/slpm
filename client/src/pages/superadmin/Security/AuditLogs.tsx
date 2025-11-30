@@ -401,7 +401,7 @@ const AuditLogs = () => {
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-semibold text-gray-900 text-sm">{log.user}</p>
-                          <p className="text-xs text-gray-500">{log.ip} • {log.location}</p>
+                          <p className="text-xs text-gray-500">{log.ip} â€¢ {log.location}</p>
                         </div>
                       </td>
 

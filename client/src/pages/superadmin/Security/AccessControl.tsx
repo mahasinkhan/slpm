@@ -282,7 +282,7 @@ const AccessControl = () => {
                     <span className="font-semibold text-gray-900">{role.users} users</span>
                   </div>
                   <button className="text-purple-600 hover:text-purple-700 font-semibold text-sm">
-                    View Details →
+                    View Details â†’
                   </button>
                 </div>
               </motion.div>

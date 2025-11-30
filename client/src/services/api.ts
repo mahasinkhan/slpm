@@ -23,25 +23,63 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-// Auth utilities
+// Auth utilities - FIXED: Use 'token' key to match AuthContext
 export const getAuthToken = (): string | null => {
-  return localStorage.getItem('authToken');
+  // Use 'token' - same key as AuthContext and axios.config.ts
+  const token = localStorage.getItem('token');
+  
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log('[Auth] Token retrieved:', token ? `${token.substring(0, 20)}...` : 'NULL');
+  }
+  
+  return token;
 };
 
 export const setAuthToken = (token: string): void => {
-  localStorage.setItem('authToken', token);
+  // Use 'token' - same key as AuthContext
+  localStorage.setItem('token', token);
+  
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log('[Auth] Token stored:', token ? `${token.substring(0, 20)}...` : 'NULL');
+  }
 };
 
 export const removeAuthToken = (): void => {
-  localStorage.removeItem('authToken');
+  localStorage.removeItem('token');
+  
+  if (import.meta.env.DEV) {
+    console.log('[Auth] Token removed');
+  }
 };
 
-export const getAuthHeaders = () => {
+export const getAuthHeaders = (): HeadersInit => {
   const token = getAuthToken();
-  return {
+  const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
   };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+};
+
+// Check if token is expired
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    
+    const payload = JSON.parse(atob(parts[1]));
+    if (!payload.exp) return false;
+    
+    return Date.now() >= payload.exp * 1000;
+  } catch {
+    return true;
+  }
 };
 
 // API Service Class
@@ -56,8 +94,20 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    // Check token before making request
+    const token = getAuthToken();
+    if (token && isTokenExpired(token)) {
+      console.warn('[Auth] Token is expired');
+    }
+
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      if (import.meta.env.DEV) {
+        console.log(`[API] ${options.method || 'GET'} ${url}`);
+      }
+
+      const response = await fetch(url, {
         ...options,
         headers: {
           ...getAuthHeaders(),
@@ -68,12 +118,35 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Request failed');
+        // Handle specific error codes
+        if (response.status === 401) {
+          console.error('[API] Unauthorized - Token may be invalid or expired');
+          // Clear expired token and redirect to login
+          removeAuthToken();
+          localStorage.removeItem('user');
+          
+          // Only redirect if not already on login page
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+        }
+        
+        throw new Error(data.message || data.error || `Request failed with status ${response.status}`);
       }
 
-      return data;
+      // Handle different response formats
+      // Some endpoints return { success: true, data: {...} }
+      // Some return the data directly
+      if (typeof data === 'object' && 'success' in data) {
+        return data;
+      }
+      
+      return {
+        success: true,
+        data: data,
+      };
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('[API] Error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -83,10 +156,18 @@ class ApiService {
 
   // Auth endpoints
   async login(email: string, password: string) {
-    return this.request<{ user: User; token: string }>('/auth/login', {
+    const response = await this.request<{ user: User; token: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
+
+    // Automatically store token on successful login
+    if (response.success && response.data?.token) {
+      setAuthToken(response.data.token);
+      console.log('[Auth] Login successful, token stored');
+    }
+
+    return response;
   }
 
   async register(userData: {
@@ -104,6 +185,11 @@ class ApiService {
 
   async getProfile() {
     return this.request<User>('/auth/profile');
+  }
+
+  async logout() {
+    removeAuthToken();
+    localStorage.removeItem('user');
   }
 
   // User endpoints
@@ -138,6 +224,7 @@ class ApiService {
 
 // Create singleton instance
 export const api = new ApiService(API_BASE_URL);
+export default api;
 
 // Custom hooks for data fetching
 export function useUsers() {

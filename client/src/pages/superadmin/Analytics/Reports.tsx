@@ -56,7 +56,7 @@ const Reports = () => {
   const stats = [
     {
       label: 'Total Revenue',
-      value: '£328K',
+      value: 'Â£328K',
       change: '+23.5%',
       icon: DollarSign,
       color: 'from-green-500 to-green-600',
@@ -80,7 +80,7 @@ const Reports = () => {
     },
     {
       label: 'Avg Order Value',
-      value: '£719',
+      value: 'Â£719',
       change: '+5.2%',
       icon: TrendingUp,
       color: 'from-orange-500 to-orange-600',
@@ -396,7 +396,7 @@ const Reports = () => {
                       </span>
                       <span className="flex items-center gap-1">
                         <FileText size={14} />
-                        {report.size} • {report.format}
+                        {report.size} â€¢ {report.format}
                       </span>
                       <span className="flex items-center gap-1">
                         <Eye size={14} />

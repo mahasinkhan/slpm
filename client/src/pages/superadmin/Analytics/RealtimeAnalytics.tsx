@@ -131,7 +131,7 @@ const RealtimeAnalytics = () => {
     },
     {
       label: 'Revenue',
-      value: `£${(realtimeData.revenue / 1000).toFixed(1)}K`,
+      value: `Â£${(realtimeData.revenue / 1000).toFixed(1)}K`,
       change: '+15.7%',
       icon: DollarSign,
       color: 'from-purple-500 to-purple-600',

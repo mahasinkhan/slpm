@@ -165,7 +165,7 @@ const AddUserModal = ({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
           </div>
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
-            <input type="password" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" placeholder="••••••••" minLength={6} />
+            <input type="password" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" minLength={6} />
           </div>
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
@@ -391,14 +391,14 @@ const App = () => {
   ];
 
   const loadUsersFromStorage = async (): Promise<User[]> => {
-    console.log('🔍 Loading users from storage...');
+    console.log('ðŸ” Loading users from storage...');
     try {
       // Try window.storage first (Claude.ai artifacts)
       if (typeof window.storage !== 'undefined') {
         const result = await window.storage.get('users-data');
         if (result && result.value) {
           const parsed = JSON.parse(result.value);
-          console.log('✅ Loaded users from storage:', parsed.length, 'users', parsed.map(u => u.firstName));
+          console.log('âœ… Loaded users from storage:', parsed.length, 'users', parsed.map(u => u.firstName));
           return parsed;
         }
       } else {
@@ -406,16 +406,16 @@ const App = () => {
         const stored = localStorage.getItem('users-data');
         if (stored) {
           const parsed = JSON.parse(stored);
-          console.log('✅ Loaded users from localStorage:', parsed.length, 'users', parsed.map(u => u.firstName));
+          console.log('âœ… Loaded users from localStorage:', parsed.length, 'users', parsed.map(u => u.firstName));
           return parsed;
         }
       }
-      console.log('ℹ️ No stored data found');
+      console.log('â„¹ï¸ No stored data found');
     } catch (error) {
-      console.log('⚠️ Storage error:', error);
+      console.log('âš ï¸ Storage error:', error);
     }
     const initialData = getInitialMockData();
-    console.log('📦 Using initial mock data:', initialData.length, 'users');
+    console.log('ðŸ“¦ Using initial mock data:', initialData.length, 'users');
     // Save initial data on first load
     await saveUsersToStorage(initialData);
     return initialData;
@@ -423,33 +423,33 @@ const App = () => {
 
   const saveUsersToStorage = async (userList: User[]) => {
     try {
-      console.log('💾 Saving to storage:', userList.length, 'users', userList.map(u => u.firstName));
+      console.log('ðŸ’¾ Saving to storage:', userList.length, 'users', userList.map(u => u.firstName));
       
       // Try window.storage first (Claude.ai artifacts)
       if (typeof window.storage !== 'undefined') {
         await window.storage.set('users-data', JSON.stringify(userList));
-        console.log('✅ Save successful (window.storage)!');
+        console.log('âœ… Save successful (window.storage)!');
         
         // Verify save
         const verify = await window.storage.get('users-data');
         if (verify && verify.value) {
           const parsed = JSON.parse(verify.value);
-          console.log('✔️ Verified storage contains:', parsed.length, 'users');
+          console.log('âœ”ï¸ Verified storage contains:', parsed.length, 'users');
         }
       } else {
         // Fallback to localStorage for other environments
         localStorage.setItem('users-data', JSON.stringify(userList));
-        console.log('✅ Save successful (localStorage)!');
+        console.log('âœ… Save successful (localStorage)!');
         
         // Verify save
         const verify = localStorage.getItem('users-data');
         if (verify) {
           const parsed = JSON.parse(verify);
-          console.log('✔️ Verified localStorage contains:', parsed.length, 'users');
+          console.log('âœ”ï¸ Verified localStorage contains:', parsed.length, 'users');
         }
       }
     } catch (error) {
-      console.error('❌ Failed to save users to storage:', error);
+      console.error('âŒ Failed to save users to storage:', error);
     }
   };
 
@@ -663,7 +663,7 @@ const App = () => {
               <Users className="mr-3 text-blue-600" size={36} />
               User Management
             </h1>
-            <p className="text-gray-600">Manage all system users - {users.length} total users loaded <span className="text-xs text-blue-600 ml-2">(Storage: {users.length > 6 ? 'Modified ✓' : 'Default'})</span></p>
+            <p className="text-gray-600">Manage all system users - {users.length} total users loaded <span className="text-xs text-blue-600 ml-2">(Storage: {users.length > 6 ? 'Modified âœ“' : 'Default'})</span></p>
           </div>
           <div className="flex gap-3">
             <button onClick={handleRefresh} disabled={isRefreshing} className="flex items-center space-x-2 border-2 border-gray-300 px-4 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all disabled:opacity-50">

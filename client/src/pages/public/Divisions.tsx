@@ -121,7 +121,7 @@ const DivisionsHero = () => {
             transition={{ delay: 0.4, duration: 0.8 }}
             className="text-xl md:text-2xl text-accent-light mb-8 leading-relaxed max-w-3xl mx-auto"
           >
-            From empowering learners to building intelligent systems and pioneering research —
+            From empowering learners to building intelligent systems and pioneering research â€”
             we deliver comprehensive solutions that transform industries
           </motion.p>
 
@@ -606,7 +606,7 @@ const ResearchDivision = () => {
             Driving Responsible<br />Discovery
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            The creative core of SL Brothers Ltd — designing and testing forward-thinking ideas that shape future technologies
+            The creative core of SL Brothers Ltd â€” designing and testing forward-thinking ideas that shape future technologies
           </p>
         </motion.div>
 
@@ -904,7 +904,7 @@ const SuccessStories = () => {
       title: 'AI-Powered Analytics Platform',
       client: 'Healthcare Provider Network',
       result: 'Reduced diagnosis time by 60%',
-      metrics: ['10,000+ patients served', '99.2% accuracy', '£2M cost savings'],
+      metrics: ['10,000+ patients served', '99.2% accuracy', 'Â£2M cost savings'],
       image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80'
     },
     {

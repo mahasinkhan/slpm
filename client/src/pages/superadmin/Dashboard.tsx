@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Settings, Users, BarChart3, Shield, Activity, HardHat, 
+import {
+  Settings, Users, BarChart3, Shield, Activity, HardHat,
   Menu, X, LogOut, ChevronRight, Moon, Sun, Monitor,
   TrendingUp, DollarSign, UserPlus, ShoppingCart,
   Eye, Clock, Zap, AlertCircle, Newspaper, BookOpen, Video,
@@ -12,6 +12,9 @@ import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Cartesia
 import UserManagement from './Users/UserManagement';
 import UserDetails from './Users/UserDetails';
 import UserActivity from './Users/UserActivity';
+// START: New Import
+import RegisterUsers from './Users/RegisterUsers'; // Imported RegisterUsers component
+// END: New Import
 
 // Import Analytics Pages
 import RealtimeAnalytics from './Analytics/RealtimeAnalytics';
@@ -61,6 +64,7 @@ type RouteKey =
   | 'UserManagement'
   | 'UserDetails'
   | 'UserActivity'
+  | 'RegisterUsers' // Added new RouteKey
   | 'RealtimeAnalytics'
   | 'SystemMetrics'
   | 'Reports'
@@ -91,7 +95,8 @@ const NAV_ITEMS: NavItem[] = [
     path: '/users',
     children: [
       { id: 'UserManagement', name: 'All Users', icon: Users, path: '/users/manage' },
-      { id: 'UserDetails', name: 'Details Lookup', icon: Users, path: '/users/details' },
+      { id: 'RegisterUsers', name: 'Register Users', icon: UserPlus, path: '/users/register' }, // Added new NavItem
+      { id: 'UserDetails', name: 'Details Lookup', icon: Eye, path: '/users/details' },
       { id: 'UserActivity', name: 'User Activity', icon: Activity, path: '/users/activity' },
     ],
   },
@@ -101,8 +106,8 @@ const NAV_ITEMS: NavItem[] = [
     icon: BarChart3,
     path: '/analytics',
     children: [
-      { id: 'RealtimeAnalytics', name: 'Realtime Analytics', icon: BarChart3, path: '/analytics/realtime' },
-      { id: 'SystemMetrics', name: 'System Metrics', icon: BarChart3, path: '/analytics/metrics' },
+      { id: 'RealtimeAnalytics', name: 'Realtime Analytics', icon: Clock, path: '/analytics/realtime' },
+      { id: 'SystemMetrics', name: 'System Metrics', icon: TrendingUp, path: '/analytics/metrics' },
       { id: 'Reports', name: 'Reports', icon: BarChart3, path: '/analytics/reports' },
       { id: 'VisitorTracking', name: 'Visitor Tracking', icon: Globe, path: '/analytics/visitors' },
     ],
@@ -170,7 +175,7 @@ const DashboardOverview: React.FC<{ theme: Theme }> = ({ theme }) => {
   const stats = [
     { label: 'Total Users', value: '12,458', change: '+12.5%', icon: Users, color: 'from-blue-500 to-blue-600', trend: 'up' },
     { label: 'Active Sessions', value: '1,247', change: '+8.3%', icon: Activity, color: 'from-green-500 to-green-600', trend: 'up' },
-    { label: 'Revenue', value: '£45.6K', change: '+15.7%', icon: DollarSign, color: 'from-purple-500 to-purple-600', trend: 'up' },
+    { label: 'Revenue', value: 'Â£45.6K', change: '+15.7%', icon: DollarSign, color: 'from-purple-500 to-purple-600', trend: 'up' },
     { label: 'System Load', value: '68%', change: '-3.2%', icon: Zap, color: 'from-orange-500 to-orange-600', trend: 'down' }
   ];
 
@@ -289,6 +294,7 @@ const DashboardOverview: React.FC<{ theme: Theme }> = ({ theme }) => {
 const ContentRenderer: React.FC<{ currentPage: RouteKey; theme: Theme }> = ({ currentPage, theme }) => {
   if (currentPage === 'Dashboard') return <DashboardOverview theme={theme} />;
   if (currentPage === 'UserManagement') return <UserManagement />;
+  if (currentPage === 'RegisterUsers') return <RegisterUsers />; // Added rendering for RegisterUsers
   if (currentPage === 'UserDetails') return <UserDetails />;
   if (currentPage === 'UserActivity') return <UserActivity />;
   if (currentPage === 'RealtimeAnalytics') return <RealtimeAnalytics />;
@@ -320,7 +326,7 @@ interface SidebarItemProps {
   isCurrentPage: boolean;
   onClick: (id: RouteKey) => void;
   theme: Theme;
-  currentPage: RouteKey; 
+  currentPage: RouteKey;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({ item, isActive, isCurrentPage, onClick, theme, currentPage }) => {
@@ -339,6 +345,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, isActive, isCurrentPage
   };
 
   const isDarkMode = theme === 'dark';
+  const isChildCurrent = item.children?.some(child => child.id === currentPage);
   const buttonBase = `flex items-center justify-between w-full p-3 my-1 text-sm font-medium transition-all duration-300 rounded-xl`;
   const buttonActive = `bg-blue-600 text-white shadow-xl shadow-blue-500/30 font-semibold`;
   const buttonInactive = isDarkMode ? 'text-gray-300 hover:bg-gray-700/50 hover:text-blue-400' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700';
@@ -348,12 +355,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, isActive, isCurrentPage
 
   return (
     <div className="w-full group">
-      <button onClick={handleItemClick} className={`${buttonBase} ${isCurrentPage && !item.children ? buttonActive : buttonInactive}`}>
+      <button onClick={handleItemClick} className={`${buttonBase} ${(isCurrentPage && !item.children) || (item.children && isChildCurrent) ? buttonActive : buttonInactive}`}>
         <span className="flex items-center">
-          <item.icon className={`w-5 h-5 mr-3 ${isCurrentPage && !item.children ? 'text-white' : 'text-blue-400'}`} />
+          <item.icon className={`w-5 h-5 mr-3 ${(isCurrentPage && !item.children) || (item.children && isChildCurrent) ? 'text-white' : 'text-blue-400'}`} />
           {item.name}
         </span>
-        {item.children && <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-90' : 'rotate-0'} ${isCurrentPage ? 'text-white' : ''}`} />}
+        {item.children && <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-90' : 'rotate-0'} ${((isCurrentPage && !item.children) || (item.children && isChildCurrent)) ? 'text-white' : ''}`} />}
       </button>
       {item.children && (
         <div className={`transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-96 opacity-100 pt-1' : 'max-h-0 opacity-0'}`}>
@@ -374,7 +381,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, isActive, isCurrentPage
 // --- MAIN COMPONENT ---
 const Dashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<RouteKey>('Dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>('light');
   const [contentKey, setContentKey] = useState(0);
 
@@ -400,7 +407,7 @@ const Dashboard: React.FC = () => {
     const group = NAV_ITEMS.find(item => item.id === groupId);
     return group?.children?.some(child => child.id === currentPage) ?? false;
   };
-  
+
   const handleNavigation = (route: RouteKey) => {
     if (route !== currentPage) {
       setCurrentPage(route);
@@ -429,7 +436,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className={`flex min-h-screen transition-colors duration-500 ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'}`}>
       <style>{`${scrollbarStyles}@keyframes fade-in-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.animate-fade-in-up{animation:fade-in-up 0.4s ease-out}`}</style>
-      
+
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-3 bg-blue-600 text-white rounded-xl shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300">
           {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -462,7 +469,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </aside>
-      
+
       {isSidebarOpen && <div className="fixed inset-0 bg-black opacity-50 z-30 lg:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
 
       <main className="flex-grow overflow-y-auto w-full">
@@ -494,7 +501,7 @@ const Dashboard: React.FC = () => {
             <ContentRenderer currentPage={currentPage} theme={theme} />
           </div>
         </div>
-        
+
         <footer className={`p-6 text-center text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
           &copy; {new Date().getFullYear()} SL Brothers System. All rights reserved.
         </footer>

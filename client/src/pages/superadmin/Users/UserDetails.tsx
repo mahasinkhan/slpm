@@ -307,7 +307,7 @@ const EmployeeTracker = () => {
                         {emp.status}
                       </span>
                     </div>
-                    <p className="text-gray-600 text-sm mb-3">{emp.department} • {emp.position || 'Employee'}</p>
+                    <p className="text-gray-600 text-sm mb-3">{emp.department} â€¢ {emp.position || 'Employee'}</p>
 
                     {emp.status === 'ONLINE' && emp.loginTime && (
                       <div className="flex gap-6 text-sm">
@@ -441,7 +441,7 @@ const EmployeeTracker = () => {
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">{emp.email}</h3>
-                    <p className="text-green-700 font-semibold">{getWorkDuration(emp)} • Online</p>
+                    <p className="text-green-700 font-semibold">{getWorkDuration(emp)} â€¢ Online</p>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-600 text-sm">Since</p>

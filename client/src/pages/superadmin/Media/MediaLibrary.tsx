@@ -11,7 +11,7 @@ import {
 // import { API_BASE_URL } from '../config/config';
 
 // Option 2: Direct configuration (simple, works everywhere)
-const API_BASE_URL = 'http://localhost:5000/api'; // ← UPDATE THIS WITH YOUR BACKEND URL
+const API_BASE_URL = 'http://localhost:5000/api'; // â† UPDATE THIS WITH YOUR BACKEND URL
 
 const MediaLibrary = () => {
   const [viewMode, setViewMode] = useState('grid');

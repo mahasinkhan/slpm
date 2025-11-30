@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X, LogOut, User, Search, Sparkles, Command } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import Logo from '@/components/common/Logo'
@@ -11,6 +11,7 @@ const Header = () => {
   const [searchType, setSearchType] = useState<'standard' | 'ai'>('standard')
   const { user, isAuthenticated, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const searchRef = useRef<HTMLDivElement>(null)
 
   const navigation = [
@@ -67,6 +68,50 @@ const Header = () => {
     }
   }
 
+  // Function to get dashboard route based on user role
+  const getDashboardRoute = () => {
+    if (!user) return '/'
+    
+    console.log('User Role:', user.role) // Debug log
+    
+    switch (user.role) {
+      case 'SUPERADMIN':
+        return '/superadmin'
+      case 'ADMIN':
+        return '/admin'
+      case 'EMPLOYEE':
+        return '/employee/dashboard'
+      default:
+        return '/'
+    }
+  }
+
+  // Function to get dashboard label based on user role
+  const getDashboardLabel = () => {
+    if (!user) return 'Dashboard'
+    
+    switch (user.role) {
+      case 'SUPERADMIN':
+        return 'Super Admin'
+      case 'ADMIN':
+        return 'Admin Dashboard'
+      case 'EMPLOYEE':
+        return 'Employee Portal'
+      default:
+        return 'Dashboard'
+    }
+  }
+
+  // Check if we're on a dashboard/portal page (hide main navigation)
+  const isDashboardPage = location.pathname.startsWith('/admin') || 
+                          location.pathname.startsWith('/superadmin') || 
+                          location.pathname.startsWith('/employee')
+
+  // Don't render header on dashboard pages (they have their own layout)
+  if (isDashboardPage && location.pathname !== '/') {
+    return null
+  }
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-professional border-b border-grey-200">
@@ -107,13 +152,13 @@ const Header = () => {
 
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4 pl-4 border-l border-grey-200">
-                  <Link
-                    to={user?.role === 'SUPERADMIN' ? '/superadmin' : '/admin'}
+                  <button
+                    onClick={() => navigate(getDashboardRoute())}
                     className="flex items-center space-x-2 text-grey-700 hover:text-primary transition-colors duration-200"
                   >
                     <User size={20} />
                     <span className="font-medium">{user?.firstName}</span>
-                  </Link>
+                  </button>
                   <button
                     onClick={logout}
                     className="flex items-center space-x-2 text-grey-600 hover:text-red-600 transition-colors duration-200"
@@ -168,20 +213,22 @@ const Header = () => {
                 
                 {isAuthenticated ? (
                   <>
-                    <Link
-                      to={user?.role === 'SUPERADMIN' ? '/superadmin' : '/admin'}
-                      onClick={() => setIsOpen(false)}
-                      className="px-4 py-3 text-primary hover:bg-grey-50 rounded-lg transition-colors duration-200 font-medium flex items-center space-x-2"
+                    <button
+                      onClick={() => {
+                        navigate(getDashboardRoute())
+                        setIsOpen(false)
+                      }}
+                      className="px-4 py-3 text-primary hover:bg-grey-50 rounded-lg transition-colors duration-200 font-medium flex items-center space-x-2 text-left w-full"
                     >
                       <User size={20} />
-                      <span>Dashboard</span>
-                    </Link>
+                      <span>{getDashboardLabel()}</span>
+                    </button>
                     <button
                       onClick={() => {
                         logout()
                         setIsOpen(false)
                       }}
-                      className="px-4 py-3 text-red-600 hover:bg-grey-50 rounded-lg text-left transition-colors duration-200 font-medium flex items-center space-x-2"
+                      className="px-4 py-3 text-red-600 hover:bg-grey-50 rounded-lg text-left transition-colors duration-200 font-medium flex items-center space-x-2 w-full"
                     >
                       <LogOut size={20} />
                       <span>Logout</span>

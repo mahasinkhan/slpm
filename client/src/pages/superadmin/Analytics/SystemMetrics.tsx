@@ -375,7 +375,7 @@ const SystemMetrics = () => {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-bold text-gray-900">{server.name}</h3>
-                  <p className="text-sm text-gray-600">{server.id} • {server.location}</p>
+                  <p className="text-sm text-gray-600">{server.id} â€¢ {server.location}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-bold border-2 ${getStatusColor(server.status)}`}>
                   {server.status.toUpperCase()}

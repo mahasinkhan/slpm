@@ -102,9 +102,9 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-lg mb-4">Our Values</h3>
             <ul className="space-y-2 text-accent-light text-sm">
-              <li>✓ Integrity</li>
-              <li>✓ Innovation</li>
-              <li>✓ Impact</li>
+              <li>âœ“ Integrity</li>
+              <li>âœ“ Innovation</li>
+              <li>âœ“ Impact</li>
             </ul>
             <div className="mt-6">
               <h4 className="font-semibold mb-2">Business Enquiries</h4>
@@ -119,7 +119,7 @@ const Footer = () => {
         <div className="border-t border-gray-700 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-accent-light text-center md:text-left">
-              © {new Date().getFullYear()} SL Brothers Ltd. All rights reserved.
+              Â© {new Date().getFullYear()} SL Brothers Ltd. All rights reserved.
               <span className="block md:inline md:ml-2">
                 Company No. {companyInfo.companyNumber} | Registered in England & Wales
               </span>

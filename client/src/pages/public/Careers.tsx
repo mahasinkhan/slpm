@@ -43,126 +43,131 @@ import {
   Headset,
   ClipboardList,
   Lightbulb,
-  PieChart
+  PieChart,
+  Loader2
 } from 'lucide-react'
 
-// --- Types for Job Data ---
+// API Configuration
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// --- Types for Job Data (matching backend) ---
 interface Job {
-  id: number
+  id: string
   title: string
-  department: 'engineering' | 'design' | 'marketing' | 'sales' | 'operations'
-  location: 'remote' | 'london' | 'new york' | 'tokyo' | 'berlin'
-  type: 'full-time' | 'part-time' | 'contract' | 'internship'
+  department: string
+  location: string
+  employmentType: string
+  experienceLevel: string
   description: string
   requirements: string[]
   responsibilities: string[]
-  salary: string
-  applicants: number
-  posted: string
-  tags: string[]
+  benefits: string[]
+  skills: string[]
+  salaryMin?: number
+  salaryMax?: number
+  salaryCurrency: string
+  applicationsCount: number
+  slug: string
+  applicationDeadline: string
+  createdAt: string
+  isPublished: boolean
+  status: string
 }
 
-// --- Mock Job Data ---
-const MOCK_JOBS: Job[] = [
-  {
-    id: 1,
-    title: 'Senior Frontend Engineer (React/TS)',
-    department: 'engineering',
-    location: 'remote',
-    type: 'full-time',
-    description: 'Design and implement robust, scalable, and user-friendly frontend applications using React and TypeScript. Work closely with product and design teams.',
-    requirements: ['5+ years of experience with React/Redux/Hooks.', 'Strong proficiency in TypeScript.', 'Experience with Tailwind CSS/Styled Components.', 'Excellent communication skills.'],
-    responsibilities: ['Develop new user-facing features.', 'Build reusable components and front-end libraries.', 'Optimize application for maximum speed and scalability.', 'Collaborate with backend developers.'],
-    salary: '$120k - $160k',
-    applicants: 42,
-    posted: '2 days ago',
-    tags: ['React', 'TypeScript', 'Tailwind', 'Framer Motion']
+// --- API Service for Public Jobs ---
+const publicJobsApi = {
+  // Get all published jobs
+  getJobs: async (): Promise<Job[]> => {
+    try {
+      console.log('[Careers] Fetching jobs from:', `${API_BASE_URL}/jobs`);
+      const response = await fetch(`${API_BASE_URL}/jobs`);
+      const data = await response.json();
+      
+      console.log('[Careers] Response status:', response.status);
+      console.log('[Careers] Response data:', data);
+      
+      if (!response.ok) {
+        console.error('[Careers] API error:', data);
+        // Don't throw, just return empty array to show "no jobs" gracefully
+        return [];
+      }
+      
+      // Handle different response formats
+      if (Array.isArray(data)) {
+        console.log('[Careers] Found', data.length, 'jobs (array format)');
+        return data;
+      }
+      if (data.jobs) {
+        console.log('[Careers] Found', data.jobs.length, 'jobs (jobs property)');
+        return data.jobs;
+      }
+      if (data.data) {
+        console.log('[Careers] Found', data.data.length, 'jobs (data property)');
+        return data.data;
+      }
+      
+      console.log('[Careers] No jobs found in response');
+      return [];
+    } catch (error) {
+      console.error('[Careers] Error fetching jobs:', error);
+      return [];
+    }
   },
-  {
-    id: 2,
-    title: 'Product Designer (UX/UI)',
-    department: 'design',
-    location: 'london',
-    type: 'full-time',
-    description: 'Lead the design process from concept to final product, focusing on user experience and creating visually appealing interfaces.',
-    requirements: ['3+ years of professional UX/UI design experience.', 'Expertise in Figma or Sketch.', 'Strong portfolio showcasing product design.', 'Knowledge of design systems.'],
-    responsibilities: ['Conduct user research and testing.', 'Create wireframes, prototypes, and high-fidelity designs.', 'Iterate based on user feedback and business goals.', 'Maintain and evolve the design system.'],
-    salary: '$80k - $110k',
-    applicants: 28,
-    posted: '5 days ago',
-    tags: ['Figma', 'UX Research', 'Design System', 'Prototyping']
+
+  // Get single job by slug
+  getJobBySlug: async (slug: string): Promise<Job | null> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/jobs/${slug}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch job');
+      }
+      
+      return data.data || data;
+    } catch (error) {
+      console.error('Error fetching job:', error);
+      return null;
+    }
   },
-  {
-    id: 3,
-    title: 'Content Marketing Specialist',
-    department: 'marketing',
-    location: 'new york',
-    type: 'full-time',
-    description: 'Develop and execute a content strategy that drives organic traffic, increases brand awareness, and supports lead generation efforts.',
-    requirements: ['2+ years in content marketing/SEO.', 'Exceptional writing and editing skills.', 'Experience with content management systems (CMS).', 'Familiarity with marketing analytics.'],
-    responsibilities: ['Write, edit, and publish blog posts, guides, and website copy.', 'Manage the content calendar.', 'Optimize content for SEO.', 'Analyze content performance.'],
-    salary: '$60k - $90k',
-    applicants: 55,
-    posted: '1 week ago',
-    tags: ['SEO', 'Content Strategy', 'Blogging', 'Analytics']
-  },
-  {
-    id: 4,
-    title: 'DevOps Engineer',
-    department: 'engineering',
-    location: 'berlin',
-    type: 'full-time',
-    description: 'Maintain and scale our cloud infrastructure, improving CI/CD pipelines and ensuring system reliability.',
-    requirements: ['3+ years with AWS/GCP/Azure.', 'Proficiency in Terraform and Kubernetes.', 'Experience with CI/CD tools (e.g., Jenkins, GitLab CI).'],
-    responsibilities: ['Manage cloud infrastructure using Infrastructure as Code (IaC).', 'Implement and maintain monitoring and alerting systems.', 'Automate deployment and scaling processes.', 'Ensure high availability and disaster recovery.'],
-    salary: '$100k - $140k',
-    applicants: 35,
-    posted: '4 days ago',
-    tags: ['AWS', 'Kubernetes', 'Terraform', 'CI/CD']
-  },
-  {
-    id: 5,
-    title: 'Sales Development Representative (SDR)',
-    department: 'sales',
-    location: 'remote',
-    type: 'full-time',
-    description: 'Generate new business opportunities by identifying, qualifying, and scheduling meetings with potential clients.',
-    requirements: ['1+ year of B2B sales experience.', 'Excellent cold calling and email outreach skills.', 'Familiarity with CRM software (e.g., Salesforce).'],
-    responsibilities: ['Research and target prospective clients.', 'Qualify leads through calls and emails.', 'Schedule demos for Account Executives.', 'Maintain accurate records in the CRM.'],
-    salary: '$50k - $70k + Commission',
-    applicants: 60,
-    posted: '3 days ago',
-    tags: ['B2B', 'Salesforce', 'Outreach', 'Lead Generation']
-  },
-  {
-    id: 6,
-    title: 'Operations Analyst',
-    department: 'operations',
-    location: 'tokyo',
-    type: 'full-time',
-    description: 'Analyze business processes to identify efficiencies and improvements, supporting overall operational excellence.',
-    requirements: ['2+ years of experience in operations or business analysis.', 'Strong quantitative and analytical skills.', 'Proficiency in SQL and data visualization tools.'],
-    responsibilities: ['Map and analyze existing operational workflows.', 'Develop metrics and reports to track performance.', 'Recommend and implement process improvements.', 'Support cross-functional projects.'],
-    salary: '$75k - $105k',
-    applicants: 15,
-    posted: '6 days ago',
-    tags: ['SQL', 'Analysis', 'Process Improvement', 'Data Viz']
+
+  // Submit job application
+  submitApplication: async (jobId: string, applicationData: any): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/apply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(applicationData),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit application');
+      }
+      
+      return { success: true, message: 'Application submitted successfully!' };
+    } catch (error: any) {
+      console.error('Error submitting application:', error);
+      return { success: false, message: error.message || 'Failed to submit application' };
+    }
   }
-]
+};
 
-// --- Utility Components (Card, Button, Input, Textarea) ---
+// --- Utility Components ---
 
-// Custom Button Component (Re-imported for completeness)
 const Button = ({ children, className = '', variant = 'primary', size = 'md', onClick, type = 'button', disabled = false }: any) => {
   const baseStyles = 'font-semibold rounded-lg transition-all duration-300 inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
-  const variants = {
+  const variants: Record<string, string> = {
     primary: 'bg-[#003366] text-white hover:bg-[#002244] shadow-md hover:shadow-lg',
     outline: 'border-2 border-[#003366] text-[#003366] hover:bg-[#003366] hover:text-white',
     ghost: 'text-[#003366] hover:bg-gray-50',
     success: 'bg-[#004488] text-white hover:bg-[#003366]',
     warning: 'bg-[#C0C0C0] text-[#003366] hover:bg-[#B0B0B0]'
   }
-  const sizes = {
+  const sizes: Record<string, string> = {
     sm: 'px-4 py-2 text-sm',
     md: 'px-6 py-3 text-base',
     lg: 'px-8 py-4 text-lg'
@@ -182,7 +187,6 @@ const Button = ({ children, className = '', variant = 'primary', size = 'md', on
   )
 }
 
-// Custom Card Component (Re-imported for completeness)
 const Card = ({ children, className = '' }: any) => {
   return (
     <div className={`bg-white rounded-2xl shadow-lg p-6 ${className}`}>
@@ -191,8 +195,7 @@ const Card = ({ children, className = '' }: any) => {
   )
 }
 
-// Input Component (Re-imported for completeness)
-const Input = ({ label, type = 'text', placeholder, value, onChange, required, icon: Icon, error }: any) => {
+const Input = ({ label, type = 'text', placeholder, value, onChange, required, icon: Icon, error, name }: any) => {
   return (
     <div className="w-full">
       {label && (
@@ -206,6 +209,7 @@ const Input = ({ label, type = 'text', placeholder, value, onChange, required, i
         )}
         <input
           type={type}
+          name={name}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
@@ -218,8 +222,7 @@ const Input = ({ label, type = 'text', placeholder, value, onChange, required, i
   )
 }
 
-// Textarea Component (Re-imported for completeness)
-const Textarea = ({ label, placeholder, value, onChange, required, rows = 4, error }: any) => {
+const Textarea = ({ label, placeholder, value, onChange, required, rows = 4, error, name }: any) => {
   return (
     <div className="w-full">
       {label && (
@@ -228,6 +231,7 @@ const Textarea = ({ label, placeholder, value, onChange, required, rows = 4, err
         </label>
       )}
       <textarea
+        name={name}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
@@ -239,6 +243,33 @@ const Textarea = ({ label, placeholder, value, onChange, required, rows = 4, err
     </div>
   )
 }
+
+// --- Format Helpers ---
+const formatSalary = (min?: number, max?: number, currency: string = 'GBP') => {
+  if (!min && !max) return 'Competitive';
+  
+  const currencySymbol = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€';
+  
+  if (min && max) {
+    return `${currencySymbol}${(min / 1000).toFixed(0)}k - ${currencySymbol}${(max / 1000).toFixed(0)}k`;
+  }
+  if (min) return `From ${currencySymbol}${(min / 1000).toFixed(0)}k`;
+  if (max) return `Up to ${currencySymbol}${(max / 1000).toFixed(0)}k`;
+  return 'Competitive';
+};
+
+const getTimeAgo = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return '1 day ago';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  return `${Math.floor(diffDays / 30)} months ago`;
+};
 
 // --- Hero Section ---
 const HeroSection = () => (
@@ -313,60 +344,13 @@ const WhyJoinUs = () => {
   )
 }
 
-// --- Company Culture Section ---
-const CompanyCulture = () => {
-  const values = [
-    { icon: Zap, title: 'Bias for Action', desc: 'Move fast, iterate, and deliver results. Perfection is the enemy of good.' },
-    { icon: Globe, title: 'Global Citizenship', desc: 'Think local, act global. Embrace diversity in thought and background.' },
-    { icon: Headset, title: 'Customer Obsession', desc: 'Work backwards from the customer. Their success is our success.' },
-    { icon: Shield, title: 'Radical Candor', desc: 'Speak your mind and challenge others respectfully. Openness builds trust.' }
-  ]
-  return (
-    <section className="py-24 bg-gradient-to-br from-gray-100 to-gray-50">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <PieChart className="mx-auto text-[#003366] mb-4" size={48} />
-          <h2 className="text-4xl md:text-6xl font-bold text-[#003366] mb-4">
-            Our Core Values
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            These principles guide our decisions and define our culture.
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {values.map((value, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="text-center p-6 border-b-4 border-[#003366]/50 rounded-lg bg-white shadow-xl"
-            >
-              <value.icon className="mx-auto text-[#003366] mb-4" size={32} />
-              <h3 className="text-xl font-bold text-[#003366] mb-2">{value.title}</h3>
-              <p className="text-gray-600 text-sm">{value.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 // --- Benefits Section ---
 const BenefitsSection = () => {
   const benefits = [
     { icon: DollarSign, title: 'Top-Tier Compensation', desc: 'Competitive salary and equity packages, reviewed annually.' },
     { icon: Plane, title: 'Unlimited PTO', desc: 'Take the time you need to recharge. Mandatory minimum 4 weeks off.' },
-    { icon: Gift, title: 'Wellness Stipend', desc: '$100/month for gym, meditation, or mental health services.' },
-    { icon: Laptop, title: 'Home Office Setup', desc: '$1,000 budget for monitors, chairs, and other remote work essentials.' },
+    { icon: Gift, title: 'Wellness Stipend', desc: '£100/month for gym, meditation, or mental health services.' },
+    { icon: Laptop, title: 'Home Office Setup', desc: '£1,000 budget for monitors, chairs, and other remote work essentials.' },
     { icon: Heart, title: 'Comprehensive Health', desc: '100% covered health, dental, and vision for you and your family.' },
     { icon: Clock, title: 'Flexible Schedule', desc: 'Work when you are most productive, focusing on results, not hours.' }
   ]
@@ -411,7 +395,7 @@ const BenefitsSection = () => {
   )
 }
 
-// --- Job Card Component (Modified to use Job type) ---
+// --- Job Card Component ---
 const JobCard = ({ job, index, onClick }: { job: Job, index: number, onClick: () => void }) => {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -446,7 +430,7 @@ const JobCard = ({ job, index, onClick }: { job: Job, index: number, onClick: ()
               <span className="text-gray-300 hidden sm:inline">•</span>
               <span className="flex items-center space-x-1">
                 <Clock size={14} />
-                <span>{job.type}</span>
+                <span>{job.employmentType}</span>
               </span>
             </div>
           </div>
@@ -456,12 +440,12 @@ const JobCard = ({ job, index, onClick }: { job: Job, index: number, onClick: ()
         <p className="text-gray-600 mb-4 line-clamp-2">{job.description}</p>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {job.tags.slice(0, 4).map((tag, idx) => ( // Show max 4 tags
+          {job.skills?.slice(0, 4).map((skill, idx) => (
             <span
               key={idx}
               className="px-3 py-1 bg-[#003366]/10 text-[#003366] rounded-full text-xs font-semibold"
             >
-              {tag}
+              {skill}
             </span>
           ))}
         </div>
@@ -470,11 +454,11 @@ const JobCard = ({ job, index, onClick }: { job: Job, index: number, onClick: ()
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span className="flex items-center space-x-1">
               <DollarSign size={16} />
-              <span className="font-semibold">{job.salary}</span>
+              <span className="font-semibold">{formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}</span>
             </span>
             <span className="flex items-center space-x-1">
               <Users size={16} />
-              <span>{job.applicants} applicants</span>
+              <span>{job.applicationsCount || 0} applicants</span>
             </span>
           </div>
           <Button size="sm">
@@ -483,7 +467,7 @@ const JobCard = ({ job, index, onClick }: { job: Job, index: number, onClick: ()
         </div>
 
         <div className="mt-3 text-xs text-gray-500">
-          Posted {job.posted}
+          Posted {getTimeAgo(job.createdAt)}
         </div>
       </Card>
     </motion.div>
@@ -491,10 +475,16 @@ const JobCard = ({ job, index, onClick }: { job: Job, index: number, onClick: ()
 }
 
 // --- Job Filters Component ---
-const JobFilters = ({ selectedDepartment, setSelectedDepartment, selectedLocation, setSelectedLocation, searchQuery, setSearchQuery }: any) => {
-  const departments = ['all', 'engineering', 'design', 'marketing', 'sales', 'operations']
-  const locations = ['all', 'remote', 'london', 'new york', 'tokyo', 'berlin']
-
+const JobFilters = ({ 
+  selectedDepartment, 
+  setSelectedDepartment, 
+  selectedLocation, 
+  setSelectedLocation, 
+  searchQuery, 
+  setSearchQuery,
+  departments,
+  locations
+}: any) => {
   const FilterButton = ({ value, label, current, onClick }: any) => (
     <Button
       variant={current === value ? 'primary' : 'outline'}
@@ -530,11 +520,17 @@ const JobFilters = ({ selectedDepartment, setSelectedDepartment, selectedLocatio
                 <Filter size={16} className="mr-1" /> Department
               </h3>
               <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
-                {departments.map(dept => (
+                <FilterButton
+                  value="all"
+                  label="All Teams"
+                  current={selectedDepartment}
+                  onClick={setSelectedDepartment}
+                />
+                {departments.map((dept: string) => (
                   <FilterButton
                     key={dept}
                     value={dept}
-                    label={dept === 'all' ? 'All Teams' : dept}
+                    label={dept}
                     current={selectedDepartment}
                     onClick={setSelectedDepartment}
                   />
@@ -548,11 +544,17 @@ const JobFilters = ({ selectedDepartment, setSelectedDepartment, selectedLocatio
                 <MapPin size={16} className="mr-1" /> Location
               </h3>
               <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
-                {locations.map(loc => (
+                <FilterButton
+                  value="all"
+                  label="Anywhere"
+                  current={selectedLocation}
+                  onClick={setSelectedLocation}
+                />
+                {locations.map((loc: string) => (
                   <FilterButton
                     key={loc}
                     value={loc}
-                    label={loc === 'all' ? 'Anywhere' : loc}
+                    label={loc}
                     current={selectedLocation}
                     onClick={setSelectedLocation}
                   />
@@ -567,17 +569,28 @@ const JobFilters = ({ selectedDepartment, setSelectedDepartment, selectedLocatio
 }
 
 // --- Job Listings Component ---
-const JobListings = ({ selectedDepartment, selectedLocation, searchQuery, setSelectedJob }: any) => {
-  const filteredJobs = MOCK_JOBS.filter(job => {
-    const departmentMatch = selectedDepartment === 'all' || job.department === selectedDepartment
-    const locationMatch = selectedLocation === 'all' || job.location === selectedLocation
+const JobListings = ({ jobs, loading, searchQuery, selectedDepartment, selectedLocation, setSelectedJob }: any) => {
+  const filteredJobs = jobs.filter((job: Job) => {
+    const departmentMatch = selectedDepartment === 'all' || job.department.toLowerCase() === selectedDepartment.toLowerCase()
+    const locationMatch = selectedLocation === 'all' || job.location.toLowerCase().includes(selectedLocation.toLowerCase())
     const searchMatch = searchQuery === '' ||
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      job.skills?.some((skill: string) => skill.toLowerCase().includes(searchQuery.toLowerCase()))
 
     return departmentMatch && locationMatch && searchMatch
   })
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <Loader2 className="animate-spin mx-auto text-[#003366] mb-4" size={48} />
+          <p className="text-gray-600">Loading job openings...</p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-16 bg-white">
@@ -594,7 +607,7 @@ const JobListings = ({ selectedDepartment, selectedLocation, searchQuery, setSel
         <div className="grid md:grid-cols-2 gap-8">
           <AnimatePresence>
             {filteredJobs.length > 0 ? (
-              filteredJobs.map((job, index) => (
+              filteredJobs.map((job: Job, index: number) => (
                 <JobCard
                   key={job.id}
                   job={job}
@@ -622,464 +635,7 @@ const JobListings = ({ selectedDepartment, selectedLocation, searchQuery, setSel
   )
 }
 
-// --- CareerGrowthPath, TeamTestimonials, LifeAtCompany, DiversityInclusion, RecruitmentProcess, FAQSection, CTASection (Re-imported/Used from prompt) ---
-// Note: The components below are included from the prompt, adapted slightly for the full file structure.
-
-const CareerGrowthPath = () => {
-  const growthLevels = [
-    { level: 'Junior', years: '0-2', icon: GraduationCap, color: 'from-[#003366] to-[#004488]' },
-    { level: 'Mid-Level', years: '2-5', icon: Target, color: 'from-[#004488] to-[#005599]' },
-    { level: 'Senior', years: '5-8', icon: Award, color: 'from-[#005599] to-[#006699]' },
-    { level: 'Lead/Principal', years: '8+', icon: Rocket, color: 'from-[#C0C0C0] to-[#A0A0A0]' }
-  ]
-
-  return (
-    <section className="py-24 bg-white">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <TrendingUp className="mx-auto text-[#003366] mb-4" size={48} />
-          <h2 className="text-4xl md:text-6xl font-bold text-[#003366] mb-4">
-            Your Growth Journey
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Clear career progression with mentorship and learning at every stage
-          </p>
-        </motion.div>
-
-        <div className="relative max-w-5xl mx-auto">
-          <div className="hidden md:block absolute top-20 left-0 right-0 h-1 bg-gradient-to-r from-[#003366] via-[#004488] to-[#C0C0C0]" />
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {growthLevels.map((level, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
-                className="relative"
-              >
-                <div className="text-center mb-6">
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className={`w-20 h-20 bg-gradient-to-br ${level.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl relative z-10`}
-                  >
-                    <level.icon className="text-white" size={32} />
-                  </motion.div>
-                  <h3 className="text-xl font-bold text-[#003366] mb-1">{level.level}</h3>
-                  <p className="text-sm text-gray-600">{level.years} years</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-const TeamTestimonials = () => {
-  const testimonials = [
-    {
-      name: 'Sarah Chen',
-      role: 'Senior ML Engineer',
-      image: 'https://i.pravatar.cc/150?img=1',
-      quote: 'The learning opportunities here are incredible. I\'ve grown more in 2 years than I did in my previous 5 years elsewhere.',
-      rating: 5
-    },
-    {
-      name: 'James Rodriguez',
-      role: 'Product Designer',
-      image: 'https://i.pravatar.cc/150?img=3',
-      quote: 'Amazing culture and truly talented teammates. The work-life balance is real, not just a buzzword.',
-      rating: 5
-    },
-    {
-      name: 'Priya Sharma',
-      role: 'DevOps Lead',
-      image: 'https://i.pravatar.cc/150?img=5',
-      quote: 'I love the autonomy and trust given to make technical decisions. Leadership truly values our input.',
-      rating: 5
-    }
-  ]
-
-  return (
-    <section className="py-24 bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <MessageSquare className="mx-auto text-[#003366] mb-4" size={48} />
-          <h2 className="text-4xl md:text-6xl font-bold text-[#003366] mb-4">
-            Hear From Our Team
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Real stories from real people building amazing things
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.15 }}
-              whileHover={{ y: -10 }}
-            >
-              <Card className="h-full">
-                <div className="flex items-center space-x-4 mb-4">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-16 h-16 rounded-full object-cover border-4 border-[#003366]/10"
-                  />
-                  <div>
-                    <h4 className="font-bold text-[#003366]">{testimonial.name}</h4>
-                    <p className="text-sm text-gray-600">{testimonial.role}</p>
-                  </div>
-                </div>
-                <div className="flex space-x-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="text-[#C0C0C0] fill-[#C0C0C0]" size={16} />
-                  ))}
-                </div>
-                <p className="text-gray-700 italic">"{testimonial.quote}"</p>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-const LifeAtCompany = () => {
-  const gallery = [
-    { image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80', caption: 'Team Collaboration' },
-    { image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=800&q=80', caption: 'Modern Workspace' },
-    { image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80', caption: 'Team Events' },
-    { image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80', caption: 'Learning Sessions' }
-  ]
-
-  return (
-    <section className="py-24 bg-white">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <Coffee className="mx-auto text-[#003366] mb-4" size={48} />
-          <h2 className="text-4xl md:text-6xl font-bold text-[#003366] mb-4">
-            Life at SL Brothers
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            A glimpse into our daily life, culture, and community
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {gallery.map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              className="relative rounded-2xl overflow-hidden shadow-lg group cursor-pointer h-64"
-            >
-              <img
-                src={item.image}
-                alt={item.caption}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
-                <p className="text-white font-semibold">{item.caption}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-const DiversityInclusion = () => {
-  return (
-    <section className="py-24 bg-gradient-to-br from-[#003366] to-[#002244] text-white">
-      <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <Users className="text-[#C0C0C0] mb-6" size={48} />
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Diversity & Inclusion
-            </h2>
-            <p className="text-xl text-gray-300 mb-6">
-              We believe diverse teams build better products. Our commitment to inclusion goes beyond words – it's embedded in everything we do.
-            </p>
-            <ul className="space-y-4">
-              {[
-                '50% women in leadership positions',
-                'Team members from 25+ countries',
-                'Active ERGs (Employee Resource Groups)',
-                'Inclusive hiring and promotion practices',
-                'Regular D&I training and workshops'
-              ].map((item, idx) => (
-                <li key={idx} className="flex items-center space-x-3">
-                  <CheckCircle className="text-[#C0C0C0] flex-shrink-0" size={20} />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20">
-              <div className="grid grid-cols-2 gap-6">
-                {[
-                  { num: '50+', label: 'Nationalities' },
-                  { num: '45%', label: 'Women in Tech' },
-                  { num: '30%', label: 'LGBTQ+ Members' },
-                  { num: '100%', label: 'Pay Equity' }
-                ].map((stat, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className="text-4xl font-black text-[#C0C0C0] mb-2">{stat.num}</div>
-                    <div className="text-sm text-gray-300">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-const RecruitmentProcess = () => {
-  const steps = [
-    { icon: Send, title: 'Apply', desc: 'Submit your application online', time: '5 min' },
-    { icon: User, title: 'Initial Screen', desc: 'Phone or video chat with recruiter', time: '30 min' },
-    { icon: Code, title: 'Technical Assessment', desc: 'Skills evaluation relevant to role', time: '1-2 hours' },
-    { icon: Users, title: 'Team Interviews', desc: 'Meet potential teammates', time: '2-3 hours' },
-    { icon: CheckCircle, title: 'Offer', desc: 'Receive and accept your offer', time: '1-2 days' }
-  ]
-
-  return (
-    <section className="py-24 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <Settings className="mx-auto text-[#003366] mb-4" size={48} />
-          <h2 className="text-4xl md:text-6xl font-bold text-[#003366] mb-4">
-            Our Hiring Process
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Transparent, efficient, and designed to find the perfect mutual fit
-          </p>
-        </motion.div>
-
-        <div className="max-w-5xl mx-auto relative">
-          <div className="hidden md:block absolute top-12 left-0 right-0 h-1 bg-gradient-to-r from-[#003366] to-[#C0C0C0]" />
-
-          <div className="grid md:grid-cols-5 gap-6">
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="relative"
-              >
-                <Card className="text-center h-full">
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-16 h-16 bg-gradient-to-br from-[#003366] to-[#004488] rounded-full flex items-center justify-center mx-auto mb-4 relative z-10"
-                  >
-                    <step.icon className="text-white" size={24} />
-                  </motion.div>
-                  <div className="text-sm font-black text-[#C0C0C0] mb-2">STEP {index + 1}</div>
-                  <h3 className="text-lg font-bold text-[#003366] mb-2">{step.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{step.desc}</p>
-                  <div className="text-xs text-gray-500 flex items-center justify-center space-x-1">
-                    <Clock size={12} />
-                    <span>{step.time}</span>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-12 text-center"
-        >
-          <p className="text-gray-600 mb-4">
-            <strong>Average time to hire:</strong> 2-3 weeks from application to offer
-          </p>
-          <Button>
-            <Calendar className="mr-2" size={18} />
-            Schedule a Call
-          </Button>
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-const FAQSection = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
-
-  const faqs = [
-    {
-      question: 'Do you sponsor work visas?',
-      answer: 'Yes, we sponsor work visas for qualified candidates in the UK, US, and Canada. We handle the entire visa process and provide relocation support.'
-    },
-    {
-      question: 'What is your remote work policy?',
-      answer: 'We are a remote-first company. Most roles can be performed from anywhere. Some positions may require occasional travel to regional hubs for team meetings.'
-    },
-    {
-      question: 'How long does the hiring process take?',
-      answer: 'Our typical hiring process takes 2-3 weeks from initial application to offer. We move quickly to respect your time while ensuring a thorough evaluation.'
-    },
-    {
-      question: 'Do you offer internships or graduate programs?',
-      answer: 'Yes! We have dedicated internship and graduate programs starting twice a year (January and July). These are paid positions with potential for full-time conversion.'
-    },
-    {
-      question: 'What learning and development opportunities do you provide?',
-      answer: 'Every employee gets a $2,000 annual learning budget, access to online learning platforms, quarterly workshops, mentorship programs, and conference attendance opportunities.'
-    }
-  ]
-
-  return (
-    <section className="py-24 bg-white">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-6xl font-bold text-[#003366] mb-4">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Got questions? We've got answers
-          </p>
-        </motion.div>
-
-        <div className="max-w-3xl mx-auto">
-          {faqs.map((faq, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="mb-4"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full text-left bg-gray-50 hover:bg-gray-100 rounded-xl p-6 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-[#003366] pr-8">{faq.question}</h3>
-                  <motion.div
-                    animate={{ rotate: openIndex === index ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <ChevronDown className="text-[#003366] flex-shrink-0" size={24} />
-                  </motion.div>
-                </div>
-                <AnimatePresence>
-                  {openIndex === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
-                    >
-                      <p className="text-gray-600 mt-4">{faq.answer}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </button>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-const CTASection = ({ setShowApplicationForm }: any) => {
-  return (
-    <section className="py-32 bg-gradient-to-r from-[#003366] to-[#004488]">
-      <div className="container mx-auto px-4 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <Rocket className="mx-auto text-[#C0C0C0] mb-6" size={64} />
-          <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
-            Ready to Join Us?
-          </h2>
-          <p className="text-2xl text-gray-300 max-w-3xl mx-auto mb-10">
-            Don't see a perfect fit? Send us your resume anyway. We're always looking for exceptional talent.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-[#C0C0C0] text-[#003366] hover:bg-[#B0B0B0]" onClick={() => setShowApplicationForm(true)}>
-              <Send className="mr-2" size={20} />
-              Apply Now
-            </Button>
-            <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-[#003366]">
-              <Mail className="mr-2" size={20} />
-              Contact Recruiting Team
-            </Button>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-// --- Modals ---
-
+// --- Job Modal ---
 const JobModal = ({ job, onClose, onApply }: { job: Job | null, onClose: () => void, onApply: () => void }) => {
   if (!job) return null
 
@@ -1118,11 +674,11 @@ const JobModal = ({ job, onClose, onApply }: { job: Job | null, onClose: () => v
               </span>
               <span className="flex items-center space-x-2 text-gray-600">
                 <Clock size={18} />
-                <span>{job.type}</span>
+                <span>{job.employmentType}</span>
               </span>
               <span className="flex items-center space-x-2 text-gray-600">
                 <DollarSign size={18} />
-                <span>{job.salary}</span>
+                <span>{formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}</span>
               </span>
             </div>
 
@@ -1131,43 +687,63 @@ const JobModal = ({ job, onClose, onApply }: { job: Job | null, onClose: () => v
               <p className="text-gray-700 text-lg">{job.description}</p>
             </div>
 
-            <div className="mb-8">
-              <h3 className="text-2xl font-bold text-[#003366] mb-4">Requirements</h3>
-              <ul className="space-y-2">
-                {job.requirements.map((req, idx) => (
-                  <li key={idx} className="flex items-start space-x-3">
-                    <CheckCircle className="text-[#004488] flex-shrink-0 mt-1" size={18} />
-                    <span className="text-gray-700">{req}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="mb-8">
-              <h3 className="text-2xl font-bold text-[#003366] mb-4">Responsibilities</h3>
-              <ul className="space-y-2">
-                {job.responsibilities.map((resp, idx) => (
-                  <li key={idx} className="flex items-start space-x-3">
-                    <Target className="text-[#004488] flex-shrink-0 mt-1" size={18} />
-                    <span className="text-gray-700">{resp}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="mb-8">
-              <h3 className="text-2xl font-bold text-[#003366] mb-4">Tech Stack</h3>
-              <div className="flex flex-wrap gap-2">
-                {job.tags.map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="px-4 py-2 bg-[#003366]/10 text-[#003366] rounded-lg font-semibold text-sm"
-                  >
-                    {tag}
-                  </span>
-                ))}
+            {job.requirements && job.requirements.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-[#003366] mb-4">Requirements</h3>
+                <ul className="space-y-2">
+                  {job.requirements.map((req, idx) => (
+                    <li key={idx} className="flex items-start space-x-3">
+                      <CheckCircle className="text-[#004488] flex-shrink-0 mt-1" size={18} />
+                      <span className="text-gray-700">{req}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            )}
+
+            {job.responsibilities && job.responsibilities.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-[#003366] mb-4">Responsibilities</h3>
+                <ul className="space-y-2">
+                  {job.responsibilities.map((resp, idx) => (
+                    <li key={idx} className="flex items-start space-x-3">
+                      <Target className="text-[#004488] flex-shrink-0 mt-1" size={18} />
+                      <span className="text-gray-700">{resp}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {job.skills && job.skills.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-[#003366] mb-4">Skills Required</h3>
+                <div className="flex flex-wrap gap-2">
+                  {job.skills.map((skill, idx) => (
+                    <span
+                      key={idx}
+                      className="px-4 py-2 bg-[#003366]/10 text-[#003366] rounded-lg font-semibold text-sm"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {job.benefits && job.benefits.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-[#003366] mb-4">Benefits</h3>
+                <ul className="space-y-2">
+                  {job.benefits.map((benefit, idx) => (
+                    <li key={idx} className="flex items-start space-x-3">
+                      <Gift className="text-green-500 flex-shrink-0 mt-1" size={18} />
+                      <span className="text-gray-700">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" onClick={onApply} className="flex-1">
@@ -1185,21 +761,23 @@ const JobModal = ({ job, onClose, onApply }: { job: Job | null, onClose: () => v
   )
 }
 
+// --- Application Form Modal ---
 const ApplicationFormModal = ({ isOpen, onClose, selectedJob }: { isOpen: boolean, onClose: () => void, selectedJob: Job | null }) => {
   const [formData, setFormData] = useState({
-    fullName: '',
+    candidateName: '',
     email: '',
     phone: '',
     location: '',
-    linkedIn: '',
-    portfolio: '',
-    experience: '',
+    linkedinUrl: '',
+    portfolioUrl: '',
+    yearsExperience: '',
     coverLetter: '',
-    resume: null as File | null // Changed type to File | null
+    resumeUrl: ''
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -1207,42 +785,52 @@ const ApplicationFormModal = ({ isOpen, onClose, selectedJob }: { isOpen: boolea
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({ ...prev, resume: e.target.files![0] }))
-    }
-  }
-
   const handleClose = () => {
     onClose()
     setSubmitted(false)
+    setError('')
     setFormData({
-      fullName: '', email: '', phone: '', location: '', linkedIn: '',
-      portfolio: '', experience: '', coverLetter: '', resume: null
+      candidateName: '', email: '', phone: '', location: '', linkedinUrl: '',
+      portfolioUrl: '', yearsExperience: '', coverLetter: '', resumeUrl: ''
     })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError('')
 
-    // Basic validation (can be expanded)
-    if (!formData.fullName || !formData.email || !formData.resume) {
-      alert("Please fill in all required fields and upload a resume.")
+    if (!formData.candidateName || !formData.email) {
+      setError("Please fill in all required fields.")
       setIsSubmitting(false)
       return
     }
 
-    // Simulate API call
-    console.log('Submitting Application:', { ...formData, jobTitle: selectedJob?.title || 'General Application' })
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    if (!selectedJob) {
+      setError("No job selected.")
+      setIsSubmitting(false)
+      return
+    }
 
-    setIsSubmitting(false)
-    setSubmitted(true)
+    try {
+      const result = await publicJobsApi.submitApplication(selectedJob.id, {
+        ...formData,
+        yearsExperience: formData.yearsExperience ? parseInt(formData.yearsExperience) : undefined
+      });
 
-    setTimeout(() => {
-      handleClose()
-    }, 3000)
+      if (result.success) {
+        setSubmitted(true)
+        setTimeout(() => {
+          handleClose()
+        }, 3000)
+      } else {
+        setError(result.message)
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit application')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (!isOpen) return null
@@ -1298,12 +886,18 @@ const ApplicationFormModal = ({ isOpen, onClose, selectedJob }: { isOpen: boolea
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 50 }}
                 >
+                  {error && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                      {error}
+                    </div>
+                  )}
+
                   <div className="space-y-6 mb-8">
                     <div className="grid sm:grid-cols-2 gap-6">
                       <Input
                         label="Full Name"
-                        name="fullName"
-                        value={formData.fullName}
+                        name="candidateName"
+                        value={formData.candidateName}
                         onChange={handleChange}
                         required
                         icon={User}
@@ -1338,26 +932,26 @@ const ApplicationFormModal = ({ isOpen, onClose, selectedJob }: { isOpen: boolea
                     <div className="grid sm:grid-cols-2 gap-6">
                       <Input
                         label="LinkedIn URL"
-                        name="linkedIn"
-                        value={formData.linkedIn}
+                        name="linkedinUrl"
+                        value={formData.linkedinUrl}
                         onChange={handleChange}
                         icon={Globe}
                       />
                       <Input
                         label="Portfolio/Website (Optional)"
-                        name="portfolio"
-                        value={formData.portfolio}
+                        name="portfolioUrl"
+                        value={formData.portfolioUrl}
                         onChange={handleChange}
                         icon={ClipboardList}
                       />
                     </div>
-
-                    <Textarea
-                      label="Relevant Experience Summary (Optional)"
-                      name="experience"
-                      placeholder="Briefly describe your relevant experience..."
-                      value={formData.experience}
+                    <Input
+                      label="Years of Experience"
+                      name="yearsExperience"
+                      type="number"
+                      value={formData.yearsExperience}
                       onChange={handleChange}
+                      icon={Briefcase}
                     />
 
                     <Textarea
@@ -1366,42 +960,17 @@ const ApplicationFormModal = ({ isOpen, onClose, selectedJob }: { isOpen: boolea
                       placeholder="Why do you want to work with us?"
                       value={formData.coverLetter}
                       onChange={handleChange}
-                      rows={3}
+                      rows={4}
                     />
 
-                    {/* File Upload */}
-                    <div>
-                      <label className="block text-sm font-semibold text-[#003366] mb-2">
-                        Upload Resume (PDF, DOCX) <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept=".pdf,.doc,.docx"
-                        required
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full justify-between p-4"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <div className="flex items-center">
-                          <Upload size={20} className="mr-2" />
-                          {formData.resume ? formData.resume.name : 'Choose File'}
-                        </div>
-                        {formData.resume && (
-                          <X size={20} className="text-red-500 hover:text-red-700" onClick={(e) => {
-                            e.stopPropagation()
-                            setFormData(prev => ({ ...prev, resume: null }))
-                            if (fileInputRef.current) fileInputRef.current.value = '' // Reset input value
-                          }} />
-                        )}
-                      </Button>
-                      {/* Optional: Add file size/type validation error message here */}
-                    </div>
+                    <Input
+                      label="Resume URL (Google Drive, Dropbox, etc.)"
+                      name="resumeUrl"
+                      value={formData.resumeUrl}
+                      onChange={handleChange}
+                      icon={FileText}
+                      placeholder="https://drive.google.com/..."
+                    />
                   </div>
 
                   <Button
@@ -1413,10 +982,7 @@ const ApplicationFormModal = ({ isOpen, onClose, selectedJob }: { isOpen: boolea
                   >
                     {isSubmitting ? (
                       <div className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        <Loader2 className="animate-spin mr-3" size={20} />
                         Submitting...
                       </div>
                     ) : (
@@ -1436,13 +1002,63 @@ const ApplicationFormModal = ({ isOpen, onClose, selectedJob }: { isOpen: boolea
   )
 }
 
+// --- CTA Section ---
+const CTASection = ({ setShowApplicationForm }: any) => {
+  return (
+    <section className="py-32 bg-gradient-to-r from-[#003366] to-[#004488]">
+      <div className="container mx-auto px-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <Rocket className="mx-auto text-[#C0C0C0] mb-6" size={64} />
+          <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+            Ready to Join Us?
+          </h2>
+          <p className="text-2xl text-gray-300 max-w-3xl mx-auto mb-10">
+            Don't see a perfect fit? Send us your resume anyway. We're always looking for exceptional talent.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="bg-[#C0C0C0] text-[#003366] hover:bg-[#B0B0B0]" onClick={() => setShowApplicationForm(true)}>
+              <Send className="mr-2" size={20} />
+              Apply Now
+            </Button>
+            <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-[#003366]">
+              <Mail className="mr-2" size={20} />
+              Contact Recruiting Team
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
 // --- Main Careers Component ---
 const Careers = () => {
-  const [selectedDepartment, setSelectedDepartment] = useState<Job['department'] | 'all'>('all')
-  const [selectedLocation, setSelectedLocation] = useState<Job['location'] | 'all'>('all')
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedDepartment, setSelectedDepartment] = useState('all')
+  const [selectedLocation, setSelectedLocation] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [showApplicationForm, setShowApplicationForm] = useState(false)
+
+  // Fetch jobs from API
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setLoading(true)
+      const fetchedJobs = await publicJobsApi.getJobs()
+      setJobs(fetchedJobs)
+      setLoading(false)
+    }
+    fetchJobs()
+  }, [])
+
+  // Extract unique departments and locations from jobs
+  const departments = Array.from(new Set(jobs.map(job => job.department).filter(Boolean)))
+  const locations = Array.from(new Set(jobs.map(job => job.location).filter(Boolean)))
 
   // Smooth progress bar on scroll
   const { scrollYProgress } = useScroll()
@@ -1451,13 +1067,6 @@ const Careers = () => {
     damping: 30,
     restDelta: 0.001
   })
-
-  // Close form modal when job modal is opened and vice-versa
-  useEffect(() => {
-    if (selectedJob && showApplicationForm) {
-      setShowApplicationForm(false)
-    }
-  }, [selectedJob, showApplicationForm])
 
   // Handle body scroll for modals
   useEffect(() => {
@@ -1476,7 +1085,6 @@ const Careers = () => {
 
       <HeroSection />
       <WhyJoinUs />
-      <CompanyCulture />
       <BenefitsSection />
       <JobFilters
         selectedDepartment={selectedDepartment}
@@ -1485,19 +1093,17 @@ const Careers = () => {
         setSelectedLocation={setSelectedLocation}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        departments={departments}
+        locations={locations}
       />
       <JobListings
+        jobs={jobs}
+        loading={loading}
+        searchQuery={searchQuery}
         selectedDepartment={selectedDepartment}
         selectedLocation={selectedLocation}
-        searchQuery={searchQuery}
         setSelectedJob={setSelectedJob}
       />
-      <CareerGrowthPath />
-      <TeamTestimonials />
-      <LifeAtCompany />
-      <DiversityInclusion />
-      <RecruitmentProcess />
-      <FAQSection />
       <CTASection setShowApplicationForm={setShowApplicationForm} />
 
       {/* Job Detail Modal */}
@@ -1505,7 +1111,6 @@ const Careers = () => {
         job={selectedJob}
         onClose={() => setSelectedJob(null)}
         onApply={() => {
-          setSelectedJob(null)
           setShowApplicationForm(true)
         }}
       />
